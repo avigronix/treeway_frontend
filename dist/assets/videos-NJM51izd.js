@@ -1,0 +1,1 @@
+import{o as e}from"./money-BVFfjZ8X.js";var t={today:t=>e(`/videos/today`,{signal:t}),start:t=>e(`/videos/${t}/start`,{method:`POST`}),complete:t=>e(`/videos/${t}/complete`,{method:`POST`}),history:(t,n)=>e(`/videos/history`,{query:{days:t},signal:n})};export{t};

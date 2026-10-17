@@ -1,0 +1,1 @@
+import{o as e}from"./money-BVFfjZ8X.js";var t={detail:t=>e(`/company/detail`,{signal:t}),config:t=>e(`/config/public`,{signal:t})};function n(e){return e?`/uploads/${e.replace(/^\/+/,``)}`:null}export{n,t};

@@ -1,0 +1,1 @@
+import{I as e,P as t}from"./money-BVFfjZ8X.js";var n=e(t(),1);function r(e,t,r,i){(0,n.useEffect)(()=>{if(t===void 0)return;let n=Math.max(1,Math.ceil(t/r));e>n&&i(n)},[e,t,r,i])}export{r as t};
