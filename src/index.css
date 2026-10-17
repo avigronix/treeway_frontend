@@ -1,0 +1,119 @@
+@import 'tailwindcss';
+
+/* Design tokens from docs/design/theme.css. Only these colours exist in the app. */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-g: #1e5e2a; /* main green */
+  --color-g2: #174a21; /* green hover */
+  --color-gt: #14361b; /* dark green */
+  --color-leaf: #2e7d32;
+  --color-gold: #b8901c;
+  --color-goldt: #7a5c0a;
+  --color-goldbg: #f6edcf;
+  --color-goldink: #5e4708;
+  --color-sun: #f2c94c; /* yellow on dark green */
+  --color-amber: #f2a900;
+  --color-bg: #f3f6f1;
+  --color-card: #ffffff;
+  --color-ink: #16241b;
+  --color-mut: #56645a;
+  --color-lab: #3e4c42; /* labels */
+  --color-line: #dce4d8;
+  --color-line2: #eef2ec;
+  --color-field: #c9d4c4;
+  --color-soft: #e6f0e2;
+  --color-tint: #f7faf5; /* selected row */
+  --color-tabs: #e4ebe1;
+  --color-track: #e2eade;
+  --color-okbg: #e3f1de;
+  --color-ok: #1f5f14;
+  --color-wbg: #fff1d6;
+  --color-w: #7a4a00;
+  --color-bbg: #fde4e1;
+  --color-b: #9b1c12;
+  --color-red: #b42318;
+  --color-mbg: #ecefea;
+  --color-bluebg: #e3ecfa;
+  --color-blue: #1d4690;
+  --color-offbg: #dce4d8;
+  --color-offink: #6b776e;
+  --color-tabink: #46544a;
+  --color-scrim: rgb(14 24 17 / 0.5);
+
+  /* Design: member desktop (HomeDesktop) and admin sidebar from 900px (theme.css @media max-width:900px) */
+  --breakpoint-desk: 900px;
+  /* App shell (UI round, 16 Oct): sidebar + top bar from a tablet; the sidebar opens wide by default from 1280 px. */
+  --breakpoint-tab: 768px;
+  --breakpoint-wide: 1280px;
+
+  --font-sans: 'Noto Sans', system-ui, sans-serif;
+  --font-brand: 'Cinzel', Georgia, serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  a {
+    color: var(--color-g);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 2px;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+/* Keeps the design's visual size but makes the tap area at least 44px tall. */
+@utility hit44 {
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    min-height: 100%;
+    transform: translateY(-50%);
+  }
+}
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+}
+
+@utility skeleton {
+  background: linear-gradient(90deg, var(--color-track) 25%, var(--color-line2) 50%, var(--color-track) 75%);
+  background-size: 200% 100%;
+  animation: tw-shimmer 1.2s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@keyframes tw-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
