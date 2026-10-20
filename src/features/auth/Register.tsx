@@ -1,21 +1,20 @@
-import { useRef, useState } from 'react';
-import { useParams } from 'react-router';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { ApiError } from '@/api/client';
 import { usersApi } from '@/api/users';
+import { startSession } from '@/auth/session';
 import { TopBar } from '@/components/layout/TopBar';
-import { Button, ErrorBox, Note, PasswordField, SelectField, TextField } from '@/components/ui';
+import { Button, ErrorBox, PasswordField, SelectField, TextField } from '@/components/ui';
 import { INDIAN_STATES } from '@/lib/states';
 import { useDebounced } from '@/lib/useDebounced';
 import { usePow } from '@/lib/usePow';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import * as v from '@/lib/validators';
 import { AuthPage } from './AuthShell';
-import { SignupOtpStep, type Restart } from './SignupOtp';
-import { clearPending, loadPending, savePending, type PendingSignup } from './signupPending';
 
 const schema = z
   .object({
@@ -27,11 +26,7 @@ const schema = z
     confirm_password: z.string(),
     // Both required (Q2, Vinay 16 Oct): the admin filters and the delivery charge use the state.
     state: z.string().min(1, 'Choose your state.'),
-    district: z
-      .string()
-      .trim()
-      .min(2, 'Enter your district.')
-      .max(60, 'District name is too long.'),
+    district: z.string().trim().min(2, 'Enter your district.').max(60, 'District name is too long.'),
   })
   .refine((f) => f.password === f.confirm_password, {
     path: ['confirm_password'],
@@ -69,11 +64,18 @@ function useMobileCheck(raw: string) {
 
 export default function Register() {
   const { code: fromLink } = useParams();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const [serverError, setServerError] = useState<unknown>(null);
-  // A sign-up waiting for its email OTP (also after closing the page and coming back).
-  const [pending, setPending] = useState<PendingSignup | null>(() => loadPending());
-  const [restart, setRestart] = useState<Restart | null>(null);
   const pow = usePow();
+  // An older app version kept a half-done email-OTP sign-up here; that step no longer exists (20 Oct).
+  useEffect(() => {
+    try {
+      localStorage.removeItem('tw_signup');
+    } catch {
+      // storage blocked: nothing to clean
+    }
+  }, []);
   const honeypot = useRef<HTMLInputElement>(null);
 
   const form = useForm<Form, unknown, Clean>({
@@ -85,7 +87,6 @@ export default function Register() {
       email: '',
       state: '',
       district: '',
-      ...pending?.fields, // "Change email" after a reload: the form comes back filled (never the password)
       password: '',
       confirm_password: '',
     },
@@ -106,7 +107,6 @@ export default function Register() {
 
   const [submit, busy] = useSingleFlight(async (f: Clean) => {
     setServerError(null);
-    setRestart(null);
     if (mobile.data && !mobile.data.available) return;
     const send = async () =>
       usersApi.register({
@@ -130,24 +130,10 @@ export default function Register() {
         if (!(e instanceof ApiError && e.error === 'Captcha')) throw e;
         res = await send();
       }
-      // No ID yet: the email OTP comes next (Q3, 16 Oct).
-      const now = Date.now();
-      const p: PendingSignup = {
-        ticket: res.signup_ticket,
-        maskedEmail: res.email,
-        sentAt: now,
-        expiresAt: now + res.expires_in * 1000,
-        fields: {
-          sponsor_code: f.sponsor_code,
-          full_name: f.full_name,
-          mobile: f.mobile,
-          email: f.email,
-          state: f.state ?? '',
-          district: f.district ?? '',
-        },
-      };
-      savePending(p);
-      setPending(p);
+      // The ID is made (inactive) and the member is logged in: the dashboard, to look around until activation
+      // (no email OTP at sign-up, Vinay 20 Oct). The same form again gives the same ID, never a second one.
+      startSession(qc, res.token);
+      navigate('/', { replace: true });
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         form.setError('mobile', { message: 'This number is already used' });
@@ -156,25 +142,6 @@ export default function Register() {
       setServerError(e);
     }
   });
-
-  if (pending)
-    return (
-      <SignupOtpStep
-        pending={pending}
-        onChangeEmail={() => {
-          clearPending(); // the old sign-up is left to expire; a new one starts with the new email
-          form.reset({ ...form.getValues(), ...pending.fields, password: '', confirm_password: '' });
-          setPending(null);
-          setTimeout(() => form.setFocus('email'), 0);
-        }}
-        onRestart={(r) => {
-          form.reset({ ...form.getValues(), ...pending.fields, password: '', confirm_password: '' });
-          setPending(null);
-          setRestart(r);
-          if (r.reason === 'mobile') setTimeout(() => form.setError('mobile', { message: r.message }), 0);
-        }}
-      />
-    );
 
   return (
     <AuthPage>
@@ -209,7 +176,7 @@ export default function Register() {
           {...form.register('mobile')}
         />
         <TextField
-          label="Email (we send OTP here)"
+          label="Email"
           type="email"
           inputMode="email"
           autoComplete="email"
@@ -258,7 +225,6 @@ export default function Register() {
             />
           </label>
         </div>
-        {restart?.reason === 'expired' && <Note tone="warn">{restart.message}</Note>}
         {serverError ? <ErrorBox error={serverError} /> : null}
         <Button type="submit" busy={busy} className="mt-auto">
           Create free account

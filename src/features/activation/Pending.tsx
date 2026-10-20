@@ -41,7 +41,7 @@ export default function Pending() {
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-bg tab:my-8 tab:min-h-0 tab:max-w-[600px] tab:overflow-hidden tab:rounded-3xl tab:border tab:border-line tab:shadow-xl">
-      <TopBar logo title="Your ID is ready" subtitle="We are checking your payment" />
+      <TopBar back="/" title="Your ID is ready" subtitle="We are checking your payment" />
       <main className="flex flex-1 flex-col gap-3.5 px-4 py-3.5">
         <Card className="items-center gap-1.5 p-5 text-center">
           <span className="text-[13px] text-mut">Your ID</span>

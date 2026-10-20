@@ -133,6 +133,7 @@ export default function Activate() {
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-bg tab:my-8 tab:min-h-0 tab:max-w-[600px] tab:overflow-hidden tab:rounded-3xl tab:border tab:border-line tab:shadow-xl">
       <TopBar
+        back="/"
         title="Activate your ID"
         subtitle={`${me.data.user_code} · free account ready`}
         right={<Chip tone="wait">Not active</Chip>}

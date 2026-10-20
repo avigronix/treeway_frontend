@@ -120,8 +120,9 @@ export default function Home() {
       title={first ? <span className="text-base">Hello, {first}</span> : <Skeleton className="h-5 w-32" />}
       subtitle={
         me ? (
-          <span className="font-bold text-ok">
-            {me.user_code} · Active{dash?.rank_name ? ` · ${dash.rank_name}` : ''}
+          <span className={me.status === 'active' ? 'font-bold text-ok' : 'font-bold text-goldt'}>
+            {me.user_code} · {me.status === 'active' ? 'Active' : 'Not active'}
+            {dash?.rank_name ? ` · ${dash.rank_name}` : ''}
           </span>
         ) : undefined
       }

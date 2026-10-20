@@ -26,6 +26,7 @@ export function useVideoLock() {
     queryFn: ({ signal }) => videosApi.today(signal),
     staleTime: 60_000,
     retry: 1,
+    refetchOnMount: 'always', // an answer cached while the ID was inactive (no lock) must never decide the lock
     refetchOnWindowFocus: false, // the checkpoint below does it, with the "not in the middle of a screen" rule
     refetchInterval: (query) => (query.state.status === 'error' ? RETRY_WHEN_FAILED_MS : false),
   });
@@ -33,10 +34,13 @@ export function useVideoLock() {
   const [show, setShow] = useState(false);
   const [done, setDone] = useState<VideoDone | null>(null);
   const [answered, setAnswered] = useState(false);
+  const [mountedAt] = useState(() => Date.now());
   const d = today.data;
 
   // First answer: lock at once. (State adjusted during render, React's pattern for "react to new data".)
-  if (d && !answered) {
+  // Only an answer fetched after this layout opened counts: right after activation the cache still has the
+  // inactive ID's answer (locked = false) from the dashboard.
+  if (d && !answered && today.dataUpdatedAt >= mountedAt) {
     setAnswered(true);
     if (d.locked) setShow(true);
   }

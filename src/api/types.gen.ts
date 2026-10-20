@@ -52,52 +52,10 @@ export interface paths {
         put?: never;
         /**
          * Register
-         * @description Sign-up step 1 (email OTP, Q3 yes, 16 Oct): checks everything, keeps the form for 30 minutes (the password
-         *     only as its hash) and mails an OTP. The ID is made by POST /users/register/verify. Old members are not touched.
+         * @description Free sign-up (SRS 2: the ID is made as soon as the form is sent; no email OTP, Vinay 20 Oct). Makes the
+         *     inactive ID and logs the member in. The same form again (double tap, lost answer) gives the same ID back.
          */
         post: operations["register_api_v1_users_register_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/register/resend": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Register Resend
-         * @description A new sign-up OTP to the same email (60 s gap, at most 5 per sign-up). To use another email, fill the form
-         *     again (a new sign-up).
-         */
-        post: operations["register_resend_api_v1_users_register_resend_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/users/register/verify": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Register Verify
-         * @description Sign-up step 2: the right OTP makes the ID (free, inactive) and logs the member in. The same ticket again
-         *     (double tap, lost answer) gives the same ID, never a second one.
-         */
-        post: operations["register_verify_api_v1_users_register_verify_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5058,14 +5016,6 @@ export interface components {
             status: number;
             data: components["schemas"]["SignupDone"];
         };
-        /** Envelope[SignupOtp] */
-        Envelope_SignupOtp_: {
-            /** Msg */
-            msg: string;
-            /** Status */
-            status: number;
-            data: components["schemas"]["SignupOtp"];
-        };
         /** Envelope[SponsorCheck] */
         Envelope_SponsorCheck_: {
             /** Msg */
@@ -7337,7 +7287,7 @@ export interface components {
         };
         /**
          * SignupDone
-         * @description Sign-up step 2 of 2: the ID is made and the member is logged in (the app opens "Activate your ID").
+         * @description Sign-up: the ID is made (inactive) and the member is logged in (the app opens the dashboard).
          */
         SignupDone: {
             /** Token */
@@ -7347,41 +7297,6 @@ export interface components {
             user_code: string;
             /** Full Name */
             full_name: string;
-        };
-        /**
-         * SignupOtp
-         * @description Sign-up step 1 of 2: the OTP went to the email. Send signup_ticket + the OTP to POST /users/register/verify.
-         */
-        SignupOtp: {
-            /** Signup Ticket */
-            signup_ticket: string;
-            /**
-             * Email
-             * @description Masked, e.g. s****@gmail.com
-             */
-            email: string;
-            /**
-             * Resend In
-             * @description Seconds before POST /users/register/resend works
-             */
-            resend_in: number;
-            /**
-             * Expires In
-             * @description Seconds the sign-up is kept; then the form must be filled again
-             */
-            expires_in: number;
-        };
-        /** SignupTicketModel */
-        SignupTicketModel: {
-            /** Signup Ticket */
-            signup_ticket: string;
-        };
-        /** SignupVerifyModel */
-        SignupVerifyModel: {
-            /** Signup Ticket */
-            signup_ticket: string;
-            /** Otp */
-            otp: string;
         };
         /** SingleLegRun */
         SingleLegRun: {
@@ -8082,72 +7997,6 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["RegisterModel"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Envelope_SignupOtp_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    register_resend_api_v1_users_register_resend_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignupTicketModel"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Envelope_SignupOtp_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    register_verify_api_v1_users_register_verify_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SignupVerifyModel"];
             };
         };
         responses: {

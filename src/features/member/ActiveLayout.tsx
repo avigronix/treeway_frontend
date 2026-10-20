@@ -1,9 +1,30 @@
-import { Outlet, useNavigate } from 'react-router';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+import { useMe } from '@/auth/session';
 import { VideoLockModal, VideosDoneModal } from '@/features/videos/VideoModals';
 import { useVideoLock } from '@/features/videos/useVideoLock';
+import { ActivateBanner, ActivateFirst } from './InactiveParts';
+import { isLockedForInactive } from './inactiveLock';
 
-/** Every page of an ACTIVE member. Shows the locked daily videos over the app until today's are done. */
+/** Every member page. An ACTIVE member gets the locked daily videos over the app until today's are done.
+ * An INACTIVE member (Vinay 20 Oct) may look around: a banner on top, and pages that need an active ID show
+ * "Activate your ID first". (The server says locked = false for an inactive ID, so no video lock either.) */
 export default function ActiveLayout() {
+  const me = useMe().data;
+  if (me?.status === 'inactive') return <InactiveLayout />;
+  return <LockedVideosLayout />;
+}
+
+function InactiveLayout() {
+  const { pathname } = useLocation();
+  return (
+    <>
+      <ActivateBanner />
+      {isLockedForInactive(pathname) ? <ActivateFirst /> : <Outlet />}
+    </>
+  );
+}
+
+function LockedVideosLayout() {
   const lock = useVideoLock();
   const navigate = useNavigate();
   const today = lock.today.data;

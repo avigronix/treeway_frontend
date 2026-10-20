@@ -22,18 +22,18 @@ export function homeOf(access: Access): string {
       return '/admin';
     case 'doctor':
       return '/doctor';
-    case 'inactive':
-      return '/activate';
+    case 'inactive': // the dashboard, to look around; actions open "Activate your ID" (Vinay 20 Oct)
     case 'active':
       return '/';
   }
 }
 
-/** Can this person open this area? An inactive ID sees only the activation pages. */
+/** Can this person open this area? An inactive ID may LOOK at the member pages (MemberLayout locks every action)
+ * and is the only one who sees the activation pages. */
 export function canOpen(access: Access, area: Area): boolean {
   switch (area) {
     case 'member':
-      return access === 'active';
+      return access === 'active' || access === 'inactive';
     case 'activation':
       return access === 'inactive';
     case 'admin':

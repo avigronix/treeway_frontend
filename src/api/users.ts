@@ -6,7 +6,6 @@ export type PublicUser = Schema<'PublicUser'>;
 export type LoginToken = Schema<'LoginToken'>;
 export type LoginOtpNeeded = Schema<'LoginOtpNeeded'>;
 export type SponsorCheck = Schema<'SponsorCheck'>;
-export type SignupOtp = Schema<'SignupOtp'>;
 export type SignupDone = Schema<'SignupDone'>;
 export type RegisterBody = Schema<'RegisterModel'>;
 
@@ -26,14 +25,8 @@ export const usersApi = {
     api<LoginToken>('/users/login/otp', { json: { login_ticket, otp } }),
   logoutAll: () => api<unknown>('/users/logout-all', { method: 'POST' }),
 
-  /** Sign-up step 1: everything is checked and an OTP goes to the email. No ID yet (Q3, 16 Oct). */
-  register: (body: RegisterBody) => api<SignupOtp>('/users/register', { json: body }),
-  /** Step 2: the right OTP makes the ID and logs in. The same ticket again gives the same ID. */
-  registerVerify: (signup_ticket: string, otp: string) =>
-    api<SignupDone>('/users/register/verify', { json: { signup_ticket, otp } }),
-  /** A new OTP to the same email (60 s gap). */
-  registerResend: (signup_ticket: string) =>
-    api<SignupOtp>('/users/register/resend', { json: { signup_ticket } }),
+  /** Free sign-up: makes the inactive ID and logs in (no email OTP, 20 Oct). The same form again gives the same ID. */
+  register: (body: RegisterBody) => api<SignupDone>('/users/register', { json: body }),
   /** Bot protection: a proof-of-work challenge for the sign-up form (see lib/usePow). */
   registerChallenge: () => api<Schema<'PowChallenge'>>('/users/register/challenge'),
   /** 400 when the sponsor is not valid or not active. */
