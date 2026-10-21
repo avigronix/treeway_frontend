@@ -288,7 +288,7 @@ export default function AdminDash() {
             to="/admin/members"
             label="Total members"
             value={formatCount(total)}
-            small={`${formatCount(d.members.active)} active`}
+            small={`${formatCount(d.members.active)} active${d.members.company ? ' · incl. company ID' : ''}`}
           />
           <Kpi
             label="Joined today"
@@ -304,7 +304,7 @@ export default function AdminDash() {
             to="/admin/super3"
             label="IDs in Super 3"
             value={formatCount(d.joins.ids_in_super3)}
-            small={`${formatCount(d.joins.boards_full)} boards full`}
+            small={`${d.joins.company_spots ? 'incl. company ID · ' : ''}${formatCount(d.joins.boards_full)} boards full`}
           />
         </Kpis>
       )}

@@ -135,7 +135,7 @@ export default function AdminSuper3() {
             <Kpi
               label="Total IDs on boards"
               value={formatCount(d.ids_on_boards)}
-              small={`${formatCount(d.journeys.recycle)} are recycle IDs`}
+              small={`${formatCount(d.journeys.recycle)} recycle IDs${d.company_spots ? ` · incl. company ID (${formatCount(d.company_spots)} spots)` : ''}`}
             />
             <Kpi label="Still filling" value={formatCount(d.boards.reduce((a, b) => a + b.filling, 0))} />
             <Kpi label="Boards full" value={formatCount(d.boards.reduce((a, b) => a + b.full, 0))} />

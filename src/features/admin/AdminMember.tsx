@@ -27,7 +27,7 @@ import { AdminTitle, Kpi, Kpis, Panel, Table, td } from './AdminParts';
 import { EditContactButton, ResetPasswordButton } from './AdminMemberEdit';
 import { ComplaintsTab, IncomeTab, ReverseButton } from './AdminMemberTabs';
 import { Super3Tab } from './AdminMemberSuper3';
-import { canReverse, typeText } from './adminText';
+import { canReverse, COMPANY_ID, typeText } from './adminText';
 
 // H2 "Member details": overview, wallet history (with hidden admin debits), team, block / unblock.
 type Tab = 'overview' | 'income' | 'wallet' | 'team' | 'super3' | 'complaints';
@@ -453,7 +453,9 @@ export default function AdminMember() {
             title={m.full_name}
             sub={
               <span className="inline-flex flex-wrap items-center gap-2">
-                <MemberStatusChip m={{ status: m.status, days_inactive: null }} />
+                <MemberStatusChip
+                  m={{ status: m.status, days_inactive: null, is_company: m.user_code === COMPANY_ID }}
+                />
                 {m.user_code}
                 {d.data.summary.rank?.rank_name ? ` · ${d.data.summary.rank.rank_name}` : ''} · member since{' '}
                 {formatFullDate(m.created_at)}

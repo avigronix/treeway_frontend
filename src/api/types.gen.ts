@@ -3060,6 +3060,11 @@ export interface components {
             activated_today: number;
             /** Joined Today */
             joined_today: number;
+            /**
+             * Company
+             * @description The company's own ID TW1000000, already counted in active above (1, or 0 if missing)
+             */
+            company: number;
         };
         /** AdminMembersPage */
         "AdminMembersPage-Input": {
@@ -4112,9 +4117,20 @@ export interface components {
             turnover_this_month: number;
             /** Joins This Month */
             joins_this_month: number;
-            /** Ids In Super3 */
+            /**
+             * Ids In Super3
+             * @description IDs on the boards: members' main + recycle IDs, plus the company ID TW1000000 (counted once) when it holds spots
+             */
             ids_in_super3: number;
-            /** Boards Full */
+            /**
+             * Company Spots
+             * @description Spots of the company ID (spot #1 on each board + company recycles)
+             */
+            company_spots: number;
+            /**
+             * Boards Full
+             * @description Full spots (3 below filled), the company's included
+             */
             boards_full: number;
         };
         /** DashTeam */
@@ -5763,6 +5779,11 @@ export interface components {
             blocked: number;
             /** Removed */
             removed: number;
+            /**
+             * Company
+             * @description The company's own ID TW1000000, already counted in total / active above
+             */
+            company: number;
         };
         /** MemberDashboard */
         MemberDashboard: {
@@ -7461,8 +7482,16 @@ export interface components {
              * @description Members with ₹300 on hold, waiting for the next share
              */
             waiting_second_share: number;
-            /** Ids On Boards */
+            /**
+             * Ids On Boards
+             * @description Members' main + recycle IDs, plus the company ID TW1000000 (once)
+             */
             ids_on_boards: number;
+            /**
+             * Company Spots
+             * @description Spots of the company ID (spot #1 on each board + company recycles)
+             */
+            company_spots: number;
         };
         /** Super3Status */
         "Super3Status-Input": {

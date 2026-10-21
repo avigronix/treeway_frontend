@@ -17,12 +17,13 @@ import {
 import { formatFullDate } from '@/lib/dates';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import * as v from '@/lib/validators';
+import { COMPANY_ID } from './adminText';
 import { AdminTitle, Panel, Table, td } from './AdminParts';
 
 // System → Admins: every admin account. Only the main admin (TW1000000) adds, blocks or unblocks admins;
 // the server says 403 to anyone else and never lets the main admin be blocked. A new admin has no join link.
 
-const MAIN_ADMIN = 'TW1000000';
+const MAIN_ADMIN = COMPANY_ID;
 type Account = Schema<'AdminAccount'>;
 const firstError = (r: { success: boolean; error?: { issues: { message: string }[] } }) =>
   r.success ? undefined : r.error?.issues[0]?.message;

@@ -1,6 +1,9 @@
 import { formatCount } from '@/lib/money';
 import { CODE_RE } from '@/lib/validators';
 
+/** The company's own ID: the root sponsor and the main admin. Shown like a member, always marked apart. */
+export const COMPANY_ID = 'TW1000000';
+
 // Pure helpers of the admin screens (unit tested in adminText.test.ts).
 
 /** Checks the cash-PIN form. Pure, unit tested. */

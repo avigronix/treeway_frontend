@@ -9,7 +9,7 @@ import { usePageClamp } from '@/lib/usePageClamp';
 import { useDebounced } from '@/lib/useDebounced';
 import { cx } from '@/lib/cx';
 import { useMembers } from './adminData';
-import { super3Cell } from './adminText';
+import { COMPANY_ID, super3Cell } from './adminText';
 import { AdminTitle, FilterBar, CsvButton, Kpi, Kpis, Pager, Panel, Table, td } from './AdminParts';
 
 // H1 "Members": counts, filters, search, every member with sponsor, place, rank, team and Income Wallet.
@@ -17,7 +17,14 @@ type Status = 'all' | 'active' | 'inactive' | 'blocked';
 const RANKS = ['Distributor', 'Silver', 'Gold', 'Platinum', 'Emerald', 'Diamond'];
 const PAGE = 20;
 
-export function MemberStatusChip({ m }: { m: Pick<AdminMemberRow, 'status' | 'days_inactive'> }) {
+export function MemberStatusChip({
+  m,
+}: {
+  m: Pick<AdminMemberRow, 'status' | 'days_inactive'> & { is_company?: boolean };
+}) {
+  // The company's own ID never looks like a normal member (Vinay 21 Oct).
+  if (m.is_company)
+    return <Chip tone="gold">Company ID · {m.status === 'active' ? 'Active' : m.status}</Chip>;
   if (m.status === 'active') return <Chip tone="ok">Active</Chip>;
   if (m.status === 'blocked') return <Chip tone="bad">Blocked</Chip>;
   if (m.status === 'removed') return <Chip tone="muted">Removed</Chip>;
@@ -52,7 +59,11 @@ export default function AdminMembers() {
       />
       {c && (
         <Kpis>
-          <Kpi label="Total members" value={formatCount(c.total)} />
+          <Kpi
+            label="Total members"
+            value={formatCount(c.total)}
+            small={c.company ? `incl. company ID ${COMPANY_ID}` : undefined}
+          />
           <Kpi label="Active" value={formatCount(c.active)} />
           <Kpi
             label="Not active yet"
@@ -136,19 +147,24 @@ export default function AdminMembers() {
               min={1000}
             >
               {list.data.rows.map((m) => (
-                <tr key={m.user_code} className={cx(m.status === 'blocked' && 'bg-[#FFF6F5]')}>
+                <tr
+                  key={m.user_code}
+                  className={cx(m.is_company ? 'bg-goldbg/40' : m.status === 'blocked' && 'bg-[#FFF6F5]')}
+                >
                   <td className={td}>
                     <b>{m.full_name}</b>
                     {m.is_company ? (
-                      <Chip tone="ok" className="ml-1.5">
-                        Company ID
+                      <Chip tone="gold" className="ml-1.5">
+                        Main ID · Company
                       </Chip>
                     ) : null}
                     <small className="block text-[12.5px] text-mut">
                       {m.user_code} · {m.mobile}
                     </small>
                   </td>
-                  <td className={td}>{m.sponsor_code ?? '–'}</td>
+                  <td className={td}>
+                    {m.sponsor_code === COMPANY_ID ? `${COMPANY_ID} · Company` : (m.sponsor_code ?? '–')}
+                  </td>
                   <td className={td}>{[m.district, m.state].filter(Boolean).join(', ') || '–'}</td>
                   <td className={td}>{formatDay(m.created_at)}</td>
                   <td className={td}>{m.rank_name ?? '–'}</td>
