@@ -2,13 +2,13 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Super3Status } from '@/api/member';
 import { Button, Money, Skeleton } from '@/components/ui';
-import { etaDate } from '@/lib/dates';
 import { formatCount, formatMoney } from '@/lib/money';
 import { cx } from '@/lib/cx';
 import { mainJourney, useVideosToday } from './data';
 
-/** "When will my 3 come?" (theme .eta). ETA date = today + eta_days. An estimate, the server's numbers. */
-export function EtaCard({ status, big = false }: { status: Super3Status | undefined; big?: boolean }) {
+/** "My Super 3 board": where the main ID stands and how many of its 3 spots below are filled. Opens the board
+ * tree. No estimate here: "when will my 3 come" is admin only (Vinay 21 Oct). */
+export function Super3Card({ status, big = false }: { status: Super3Status | undefined; big?: boolean }) {
   const j = mainJourney(status);
   let main: ReactNode;
   if (!status) {
@@ -23,31 +23,28 @@ export function EtaCard({ status, big = false }: { status: Super3Status | undefi
   } else if (!j) {
     main = <span className="text-[13px] text-[#C9DCC5]">All boards done.</span>;
   } else {
+    const below = j.children ?? 0;
     main = (
       <>
         <div className="flex items-end justify-between gap-2.5">
-          <div className="flex flex-col">
-            <span className="text-[13px] text-[#A9C7A3]">
-              Board {j.board}
-              {j.position !== null ? ` · spot #${formatCount(j.position)}` : ''}
-            </span>
-            <span className={cx('font-bold', big ? 'text-[32px]' : 'text-[26px]')}>
-              {j.eta_days != null ? `~${j.eta_days} day${j.eta_days === 1 ? '' : 's'}` : 'Waiting for joins'}
-            </span>
-          </div>
-          {j.eta_days != null && <span className="font-bold text-sun">around {etaDate(j.eta_days)} ›</span>}
+          <span className={cx('font-bold', big ? 'text-[26px]' : 'text-[22px]')}>
+            Board {j.board}
+            {j.position !== null ? ` · spot #${formatCount(j.position)}` : ''}
+          </span>
+          <span className="font-bold text-sun">See tree ›</span>
         </div>
+        <span className="text-[13px] text-[#C9DCC5]">{below} of 3 spots below you filled</span>
         <div
           className="relative h-2 rounded-full bg-white/15"
           role="progressbar"
           aria-label="Spots filled under you"
           aria-valuemin={0}
           aria-valuemax={3}
-          aria-valuenow={j.children ?? 0}
+          aria-valuenow={below}
         >
           <i
             className="absolute inset-y-0 left-0 rounded-full bg-[#5DD27A]"
-            style={{ width: `${Math.min(100, ((j.children ?? 0) / 3) * 100)}%` }}
+            style={{ width: `${Math.min(100, (below / 3) * 100)}%` }}
           />
         </div>
       </>
@@ -58,16 +55,7 @@ export function EtaCard({ status, big = false }: { status: Super3Status | undefi
       to="/super3"
       className="flex flex-col gap-2 rounded-[20px] bg-gt px-4 py-3.5 text-white no-underline hover:text-white"
     >
-      <div className="flex items-center justify-between gap-2.5">
-        <b className="text-[15px]">When will my 3 come?</b>
-        <span className="inline-flex items-center gap-1.5 text-xs text-[#A9C7A3]">
-          <span
-            aria-hidden="true"
-            className="size-2 rounded-full bg-[#5DD27A] shadow-[0_0_0_3px_rgba(93,210,122,.25)]"
-          />
-          Live
-        </span>
-      </div>
+      <b className="text-[15px]">My Super 3 board</b>
       {main}
     </Link>
   );

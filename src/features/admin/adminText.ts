@@ -308,3 +308,17 @@ export function pnlLines(d: PnlData) {
     ]),
   };
 }
+
+/** Members list "Super 3" column (Vinay 21 Oct): where the member's main ID stands, from the server's numbers. */
+export function super3Cell(m: {
+  is_company: boolean;
+  super3?: { shares: number; board: number | null; spot: number | null; finished: boolean };
+}): string {
+  if (m.is_company) return 'Spot #1 on every board';
+  const s = m.super3;
+  if (!s) return '–'; // an older server during a deploy: the list still opens
+  if (s.finished) return 'All 8 boards done';
+  if (s.board !== null) return `Board ${s.board}${s.spot !== null ? ` · #${formatCount(s.spot)}` : ''}`;
+  if (s.shares === 1) return '1st share on hold';
+  return 'Not in yet';
+}

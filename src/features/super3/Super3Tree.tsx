@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { memberApi } from '@/api/member';
+import { memberApi, type Super3Status } from '@/api/member';
 import type { Schema } from '@/api/schema';
 import {
   Button,
+  ButtonLink,
   Card,
   ErrorBox,
   KeyValue,
+  Money,
   Note,
   Sheet,
   SkeletonList,
@@ -19,10 +21,11 @@ import { formatCount, formatMoney } from '@/lib/money';
 import { cx } from '@/lib/cx';
 import { useSuper3Status } from '@/features/member/data';
 import { MemberPage } from '@/features/member/MemberPage';
-import { journeyLabel, myJourneys } from './super3Text';
+import { entryState, journeyLabel, myJourneys } from './super3Text';
 
 // C2 "Super 3 board tree": one spot, the spot above it and the 2 rows below (GET /super3/tree). Members see only
-// trees under their own spots (the server answers 403 for anything else).
+// trees under their own spots (the server answers 403 for anything else). This is the member's whole Super 3
+// page: "My status" (when will my 3 come) is admin only (Vinay 21 Oct), on the admin's member page.
 
 type Spot = Schema<'Spot'>;
 
@@ -71,6 +74,36 @@ function Box({
   );
 }
 
+/** Not on a board yet: why, in plain words (from the server's real shares). */
+function NotIn({ s }: { s: Super3Status }) {
+  const e = entryState(s);
+  return (
+    <Card className="gap-2">
+      <b className="text-[15px]">You are not in Super 3 yet</b>
+      {e.kind === 'none' && (
+        <span className="text-sm">
+          You have {e.directs} direct{e.directs === 1 ? '' : 's'}. Super 3 starts with your 2nd direct.
+        </span>
+      )}
+      {e.kind === 'hold' && (
+        <span className="text-sm">
+          Your 1st direct's <Money value={e.onHold} /> is kept for you. Your 2nd direct puts you on Board 1.
+        </span>
+      )}
+      {e.kind === 'lapsed' && (
+        <span className="text-sm">
+          You have {e.directs} directs, but a direct joined while your ID was blocked, so that share went to
+          the company. Super 3 starts when 2 shares are yours ({e.shares} now). Your next direct counts.
+        </span>
+      )}
+      {e.kind === 'in' && <Note>Your tree shows here once your ID is on a board.</Note>}
+      <ButtonLink to="/team" variant="ghost" size="md">
+        Invite and grow your team
+      </ButtonLink>
+    </Card>
+  );
+}
+
 export default function Super3Tree() {
   const [params, setParams] = useSearchParams();
   const st = useSuper3Status();
@@ -97,24 +130,13 @@ export default function Super3Tree() {
     setParams({ ...(j ? { journey: String(j.journey_id) } : {}), ...q }, { replace: true });
 
   return (
-    <MemberPage title="Super 3" subtitle="Board tree · tap any box to see details" back="/super3">
-      <nav aria-label="Super 3 pages" className="grid grid-cols-2 gap-1 rounded-xl bg-tabs p-1">
-        <Link
-          to="/super3"
-          className="flex h-10 items-center justify-center rounded-[9px] text-sm font-semibold text-tabink no-underline"
-        >
-          My status
-        </Link>
-        <span className="flex h-10 items-center justify-center rounded-[9px] bg-white text-sm font-semibold text-gt">
-          Board tree
-        </span>
-      </nav>
+    <MemberPage title="Super 3" subtitle="My Board Tree · tap any box to see details">
       {st.isError ? (
         <ErrorBox error={st.error} onRetry={() => st.refetch()} />
       ) : !s ? (
         <SkeletonList rows={4} />
       ) : !j ? (
-        <Note>You are not on a Super 3 board yet. Your tree shows here after your 2nd direct.</Note>
+        <NotIn s={s} />
       ) : (
         <>
           {all.length > 1 && (

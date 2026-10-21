@@ -5,7 +5,7 @@ import { ButtonLink, Card, ErrorBox, Hero, Money, Skeleton } from '@/components/
 import { formatWhen } from '@/lib/dates';
 import { formatCount } from '@/lib/money';
 import { useDashboard, useHistory, useSuper3Status, useTeamSummary, useWalletSummary } from './data';
-import { EtaCard, InviteBox, VideosCard, WalletAmount } from './HomeParts';
+import { InviteBox, Super3Card, VideosCard, WalletAmount } from './HomeParts';
 import { BannerStrip } from '@/features/content/BannerStrip';
 import { describeRow, INCOME_LABEL } from './ledger';
 import { IdStatusCard } from './InactiveParts';
@@ -189,7 +189,7 @@ export default function Home() {
             </ButtonLink>
           </div>
         </Hero>
-        <EtaCard status={s3} />
+        <Super3Card status={s3} />
         <nav aria-label="Shortcuts" className="grid grid-cols-4 gap-2">
           {QUICK.map((q) => (
             <Link
@@ -261,7 +261,7 @@ export default function Home() {
         <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-[18px]">
           <LatestIncome />
           <div className="flex min-w-0 flex-col gap-[18px]">
-            <EtaCard status={s3} big />
+            <Super3Card status={s3} big />
             <VideosCard className="rounded-[14px] p-[18px]" />
             <div className="flex flex-col gap-2.5 rounded-[14px] border border-line bg-white p-[18px]">
               <b>Invite and earn</b>

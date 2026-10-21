@@ -25,7 +25,8 @@ import { useAdminRefresh, useMember } from './adminData';
 import { MemberStatusChip } from './AdminMembers';
 import { AdminTitle, Kpi, Kpis, Panel, Table, td } from './AdminParts';
 import { EditContactButton, ResetPasswordButton } from './AdminMemberEdit';
-import { ComplaintsTab, IncomeTab, ReverseButton, Super3Tab } from './AdminMemberTabs';
+import { ComplaintsTab, IncomeTab, ReverseButton } from './AdminMemberTabs';
+import { Super3Tab } from './AdminMemberSuper3';
 import { canReverse, typeText } from './adminText';
 
 // H2 "Member details": overview, wallet history (with hidden admin debits), team, block / unblock.

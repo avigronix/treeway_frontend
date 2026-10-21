@@ -18,13 +18,12 @@ import {
 import { formatDay, formatWhen } from '@/lib/dates';
 import { formatCount } from '@/lib/money';
 import { useSingleFlight } from '@/lib/useSingleFlight';
-import { cx } from '@/lib/cx';
 import { label, tone } from '@/features/complaints/complaintText';
 import { useAdminRefresh } from './adminData';
-import { Kpi, Kpis, Panel, Table, td } from './AdminParts';
+import { Panel, Table, td } from './AdminParts';
 import { canReverse, typeText } from './adminText';
 
-// AdminMember tabs: Income, Super 3, Complaints, and the Reverse entry button on a ledger row.
+// AdminMember tabs: Income, Complaints, and the Reverse entry button on a ledger row (Super 3: AdminMemberSuper3).
 
 /** Reverse entry: an opposite row is added; nothing is deleted. The server says if the wallet is too low. */
 export function ReverseButton({ r, who }: { r: AdminLedgerRow; who: string }) {
@@ -203,70 +202,6 @@ export function IncomeTab({ code, who }: { code: string; who: string }) {
         </Button>
       )}
     </Panel>
-  );
-}
-
-export function Super3Tab({ code }: { code: string }) {
-  const s = useQuery({
-    queryKey: ['admin', 'member-super3', code],
-    queryFn: ({ signal }) => adminApi.memberSuper3(code, signal),
-  });
-  if (s.isError) return <ErrorBox error={s.error} onRetry={() => s.refetch()} />;
-  if (!s.data) return <SkeletonList rows={4} />;
-  const d = s.data;
-  return (
-    <>
-      <Kpis>
-        <Kpi label="Directs" value={formatCount(d.direct_count)} />
-        <Kpi
-          label="Super 3"
-          value={d.in_super3 ? 'In' : 'Not yet'}
-          small={
-            d.s3_shares === 1
-              ? '1st direct share on hold'
-              : d.in_super3
-                ? 'On Board 1 or above'
-                : '2 directs needed'
-          }
-        />
-        <Kpi label="On hold" value={<Money value={d.on_hold} />} />
-        <Kpi
-          label="Recycle IDs"
-          value={formatCount(d.recycle_ids)}
-          small={
-            <>
-              Earned on boards <Money value={d.journey_total} />
-            </>
-          }
-        />
-      </Kpis>
-      <Panel title="Board spots">
-        {d.journeys.length === 0 ? (
-          <Empty title="Not on any board yet." />
-        ) : (
-          <Table head={['ID', 'Board now', 'Spot', 'Below', 'Line', 'Expected', 'Every board']} min={760}>
-            {d.journeys.map((j) => (
-              <tr key={j.journey_id}>
-                <td className={td}>
-                  {j.kind === 'main' ? 'Main ID' : j.kind === 'recycle' ? 'Recycle ID' : 'Company'}
-                </td>
-                <td className={td}>{j.finished ? <Chip tone="ok">All 8 done</Chip> : `Board ${j.board}`}</td>
-                <td className={cx(td, 'num')}>{j.position ? `#${formatCount(j.position)}` : '–'}</td>
-                <td className={cx(td, 'num')}>{j.children != null ? `${j.children} of 3` : '–'}</td>
-                <td className={cx(td, 'num')}>{j.line_at ? `#${formatCount(j.line_at)} now` : '–'}</td>
-                <td className={td}>{j.eta_days != null ? `~${j.eta_days} days` : '–'}</td>
-                <td className={td}>
-                  {j.positions.map((p) => `B${p.board} #${formatCount(p.position)}`).join(' · ') || '–'}
-                </td>
-              </tr>
-            ))}
-          </Table>
-        )}
-        <span className="text-xs text-mut">
-          To see a board tree, open Super 3 → Look up a spot with the board and spot number.
-        </span>
-      </Panel>
-    </>
   );
 }
 

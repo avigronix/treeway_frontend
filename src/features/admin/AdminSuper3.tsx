@@ -11,7 +11,7 @@ import { speedText } from './adminText';
 // I1 "Super 3 control": the 8 board lines, recycle IDs, money on hold, Self Help Fund, look up any spot.
 type Spot = Schema<'Spot'>;
 
-function SpotBox({ s, me }: { s: Omit<Spot, 'children'>; me?: boolean }) {
+export function SpotBox({ s, me }: { s: Omit<Spot, 'children'>; me?: boolean }) {
   return (
     <div
       className={cx(

@@ -784,7 +784,8 @@ export interface paths {
         };
         /**
          * Super3 Status
-         * @description 'When will my 3 come?' for every running journey of the member.
+         * @description The member's journeys and spots (for the board tree). The 'when will my 3 come' estimate (line, spots to
+         *     go, speed, days, money when full) is admin only (Vinay 21 Oct): it stays null here.
          */
         get: operations["super3_status_api_v1_super3_status_get"];
         put?: never;
@@ -2989,6 +2990,7 @@ export interface components {
              * @description 'Not active · day 3'
              */
             days_inactive: number | null;
+            super3: components["schemas"]["MemberRowSuper3"];
         };
         /** AdminMemberUser */
         AdminMemberUser: {
@@ -3060,7 +3062,27 @@ export interface components {
             joined_today: number;
         };
         /** AdminMembersPage */
-        AdminMembersPage: {
+        "AdminMembersPage-Input": {
+            /** Rows */
+            rows: components["schemas"]["AdminMemberRow"][];
+            /**
+             * Total
+             * @description Rows in the whole list
+             */
+            total: number;
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+            /**
+             * Next Cursor
+             * @description Send as ?cursor= for the next page; null = no more rows
+             */
+            next_cursor: string | null;
+            counts: components["schemas"]["MemberCounts"];
+        };
+        /** AdminMembersPage */
+        "AdminMembersPage-Output": {
             /** Rows */
             rows: components["schemas"]["AdminMemberRow"][];
             /**
@@ -4337,7 +4359,7 @@ export interface components {
             msg: string;
             /** Status */
             status: number;
-            data: components["schemas"]["AdminMembersPage"];
+            data: components["schemas"]["AdminMembersPage-Output"];
         };
         /** Envelope[AdminOrder] */
         Envelope_AdminOrder_: {
@@ -5898,6 +5920,32 @@ export interface components {
              * Format: date-time
              */
             as_of: string;
+        };
+        /**
+         * MemberRowSuper3
+         * @description Members list 'Super 3' column: where the main ID stands (recycle IDs are on the member's page).
+         */
+        MemberRowSuper3: {
+            /**
+             * Shares
+             * @description 0 = not in, 1 = 1st direct's share on hold, 2 = on the boards
+             */
+            shares: number;
+            /**
+             * Board
+             * @description The main ID's board now
+             */
+            board: number | null;
+            /**
+             * Spot
+             * @description Its spot number on that board
+             */
+            spot: number | null;
+            /**
+             * Finished
+             * @description All 8 boards done
+             */
+            finished: boolean;
         };
         /** MemberStatusModel */
         MemberStatusModel: {

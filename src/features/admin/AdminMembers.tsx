@@ -9,6 +9,7 @@ import { usePageClamp } from '@/lib/usePageClamp';
 import { useDebounced } from '@/lib/useDebounced';
 import { cx } from '@/lib/cx';
 import { useMembers } from './adminData';
+import { super3Cell } from './adminText';
 import { AdminTitle, FilterBar, CsvButton, Kpi, Kpis, Pager, Panel, Table, td } from './AdminParts';
 
 // H1 "Members": counts, filters, search, every member with sponsor, place, rank, team and Income Wallet.
@@ -120,8 +121,19 @@ export default function AdminMembers() {
         ) : (
           <>
             <Table
-              head={['Member', 'Sponsor', 'Place', 'Joined', 'Rank', 'Team', 'Income Wallet', 'Status', '']}
-              min={900}
+              head={[
+                'Member',
+                'Sponsor',
+                'Place',
+                'Joined',
+                'Rank',
+                'Team',
+                'Super 3',
+                'Income Wallet',
+                'Status',
+                '',
+              ]}
+              min={1000}
             >
               {list.data.rows.map((m) => (
                 <tr key={m.user_code} className={cx(m.status === 'blocked' && 'bg-[#FFF6F5]')}>
@@ -141,13 +153,14 @@ export default function AdminMembers() {
                   <td className={td}>{formatDay(m.created_at)}</td>
                   <td className={td}>{m.rank_name ?? '–'}</td>
                   <td className={cx(td, 'num')}>{formatCount(m.active_team)}</td>
+                  <td className={cx(td, 'whitespace-nowrap')}>{super3Cell(m)}</td>
                   <td className={td}>
                     <Money value={m.income} />
                   </td>
                   <td className={td}>
                     <MemberStatusChip m={m} />
                   </td>
-                  <td className={td}>
+                  <td className={cx(td, 'whitespace-nowrap')}>
                     <Link to={`/admin/members/${m.user_code}`} className="font-bold">
                       View ›
                     </Link>

@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react';
-import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, useLocation, type RouteObject } from 'react-router';
 import { Root, RouteError } from '@/app/Root';
 import { AppLoading } from '@/app/AppLoading';
 import { GuestOnly, RequireArea } from '@/auth/guards';
@@ -19,6 +19,11 @@ const page = (load: () => Promise<{ default: ComponentType }>) => async () => ({
  * (A route-level `lazy` is fetched while matching, before the guard runs: a logged-out visitor of /admin
  * would download admin code.)
  */
+/** A moved page: same query string, new path. */
+function KeepQuery({ to }: { to: string }) {
+  return <Navigate to={to + useLocation().search} replace />;
+}
+
 function guarded(Page: LazyExoticComponent<ComponentType>) {
   return (
     <Suspense fallback={<AppLoading />}>
@@ -67,7 +72,6 @@ const AddFunds = lazy(() => import('@/features/money/AddFunds'));
 const BuyPins = lazy(() => import('@/features/money/BuyPins'));
 const P2P = lazy(() => import('@/features/money/P2P'));
 const Pins = lazy(() => import('@/features/money/Pins'));
-const Super3 = lazy(() => import('@/features/super3/Super3'));
 const Super3Tree = lazy(() => import('@/features/super3/Super3Tree'));
 const Complaints = lazy(() => import('@/features/complaints/Complaints'));
 const ComplaintNew = lazy(() => import('@/features/complaints/ComplaintNew'));
@@ -157,8 +161,9 @@ export const routes: RouteObject[] = [
               { path: '/p2p', element: guarded(P2P) },
               { path: '/pins', element: guarded(Pins) },
               { path: '/pins/buy', element: guarded(BuyPins) },
-              { path: '/super3', element: guarded(Super3) },
-              { path: '/super3/tree', element: guarded(Super3Tree) },
+              // One Super 3 page for members: the board tree (Vinay 21 Oct). Old links keep their ?journey/board.
+              { path: '/super3', element: guarded(Super3Tree) },
+              { path: '/super3/tree', element: <KeepQuery to="/super3" /> },
               { path: '/complaints', element: guarded(Complaints) },
               { path: '/complaints/new', element: guarded(ComplaintNew) },
               { path: '/complaints/:id', element: guarded(ComplaintChat) },
