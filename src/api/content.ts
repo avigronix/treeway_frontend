@@ -4,6 +4,7 @@ import type { Schema } from './schema';
 // Home / login banners and the public "Contact us" form (routes/contentApis.py).
 export type Banner = Schema<'Banner'>;
 export type AdminBanner = Schema<'AdminBanner'>;
+export type AdminBannerDetail = Schema<'AdminBannerDetail'>;
 export type ContactRow = Schema<'ContactRow'>;
 
 /** Public files (banners) are served by the backend at /uploads/<path>. */
@@ -46,6 +47,11 @@ export const contentApi = {
       form: bannerForm(fields, image),
       timeoutMs: 60_000,
     }),
+
+  bannerDetail: (id: number, signal?: AbortSignal) =>
+    api<AdminBannerDetail>(`/admin/banners/${id}`, { signal }),
+  /** Gone from Home / login at once; the audit log keeps a copy. 404 = deleted already. */
+  deleteBanner: (id: number) => api<unknown>(`/admin/banners/${id}`, { method: 'DELETE' }),
 
   contactMessages: (status: 'new' | 'replied', page: number, signal?: AbortSignal) =>
     api<Schema<'ContactPage'>>('/admin/contact-messages', { query: { status, page, limit: 20 }, signal }),

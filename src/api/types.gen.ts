@@ -2292,10 +2292,19 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * Banner Detail
+         * @description One banner with who added it and who changed it last (Vinay 21 Oct).
+         */
+        get: operations["banner_detail_api_v1_admin_banners__bannerId__get"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * Delete Banner
+         * @description Gone from Home / login at once. The audit log keeps a full copy. The picture file stays on disk: phones
+         *     that cached the banner list for a few minutes never show a broken picture, and the copy can still be seen.
+         */
+        delete: operations["delete_banner_api_v1_admin_banners__bannerId__delete"];
         options?: never;
         head?: never;
         /**
@@ -2626,6 +2635,57 @@ export interface components {
              * @description On and inside its dates today
              */
             live: boolean;
+        };
+        /** AdminBannerDetail */
+        AdminBannerDetail: {
+            /** Id */
+            id: number;
+            /** Title */
+            title: string;
+            /**
+             * Image
+             * @description Public path: GET /uploads/<image>
+             */
+            image: string;
+            /** Link Url */
+            link_url: string | null;
+            /**
+             * Audience
+             * @enum {string}
+             */
+            audience: "everyone" | "login";
+            /** Starts On */
+            starts_on: string | null;
+            /** Ends On */
+            ends_on: string | null;
+            /** Is Active */
+            is_active: boolean;
+            /** Sort Order */
+            sort_order: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Live
+             * @description On and inside its dates today
+             */
+            live: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Created By Name */
+            created_by_name: string | null;
+            /**
+             * Last Edit At
+             * @description Last edit (from the audit log); null = never edited
+             */
+            last_edit_at: string | null;
+            /** Last Edit By Name */
+            last_edit_by_name: string | null;
         };
         /** AdminCreateModel */
         AdminCreateModel: {
@@ -4336,6 +4396,14 @@ export interface components {
             waiting_hours: number | null;
             /** Prescriptions */
             prescriptions: components["schemas"]["Prescription"][];
+        };
+        /** Envelope[AdminBannerDetail] */
+        Envelope_AdminBannerDetail_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["AdminBannerDetail"];
         };
         /** Envelope[AdminDashboard] */
         Envelope_AdminDashboard_: {
@@ -12086,6 +12154,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_IdOnly_"];
+                };
+            };
+        };
+    };
+    banner_detail_api_v1_admin_banners__bannerId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_AdminBannerDetail_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_banner_api_v1_admin_banners__bannerId__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bannerId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

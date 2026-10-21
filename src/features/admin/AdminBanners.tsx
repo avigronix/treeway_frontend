@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { ApiError } from '@/api/client';
 import { contentApi, uploadUrl, type AdminBanner, type BannerFields, type ContactRow } from '@/api/content';
 import {
   Button,
@@ -14,6 +15,7 @@ import {
   TextAreaField,
   TextField,
   Empty,
+  KeyValue,
 } from '@/components/ui';
 import { formatDay, formatWhen, istDayKey } from '@/lib/dates';
 import { useSingleFlight } from '@/lib/useSingleFlight';
@@ -21,7 +23,7 @@ import { usePageClamp } from '@/lib/usePageClamp';
 import { Pager, Panel } from './AdminParts';
 import { bannerState, checkBanner } from './adminText';
 
-// J3 "Home banners" and "Contact us messages" (AdminContent).
+// J3 "Home banners" (add, view, edit, delete: Vinay 21 Oct) and "Contact us messages" (AdminContent).
 
 type Form = {
   title: string;
@@ -162,12 +164,129 @@ function BannerSheet({ b, onClose }: { b: AdminBanner | null; onClose: (msg?: st
   );
 }
 
+function StateChip({ b, today }: { b: AdminBanner; today: string }) {
+  const st = bannerState(b, today);
+  if (st === 'live') return <Chip tone="ok">Live</Chip>;
+  if (st === 'off') return <Chip tone="muted">Off</Chip>;
+  if (st === 'later') return <Chip tone="wait">Starts {formatDay(b.starts_on!)}</Chip>;
+  return <Chip tone="muted">Ended</Chip>;
+}
+
+/** Details of one banner (fresh from the server), with Edit and Delete. Delete asks once more first. */
+function BannerDetails({
+  id,
+  onEdit,
+  onClose,
+}: {
+  id: number;
+  onEdit: (b: AdminBanner) => void;
+  onClose: (msg?: string) => void;
+}) {
+  const qc = useQueryClient();
+  const d = useQuery({
+    queryKey: ['admin', 'banners', id],
+    queryFn: ({ signal }) => contentApi.bannerDetail(id, signal),
+    staleTime: 0,
+  });
+  const [confirm, setConfirm] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const refresh = () =>
+    Promise.all([
+      qc.invalidateQueries({ queryKey: ['admin', 'banners'] }),
+      qc.invalidateQueries({ queryKey: ['banners'] }),
+    ]);
+
+  const [remove, removing] = useSingleFlight(async () => {
+    setError(null);
+    try {
+      await contentApi.deleteBanner(id);
+      onClose('Banner deleted.');
+    } catch (e) {
+      // Another admin (or a double tap) deleted it first: the result is the same.
+      if (e instanceof ApiError && e.status === 404) onClose('This banner was already deleted.');
+      else setError(e);
+    } finally {
+      await refresh();
+    }
+  });
+
+  const b = d.data;
+  return (
+    <Sheet open onClose={() => onClose()} title="Banner details" locked={removing}>
+      {d.isError ? (
+        <ErrorBox error={d.error} onRetry={() => (d.refetch(), refresh())} />
+      ) : !b ? (
+        <SkeletonList rows={3} />
+      ) : (
+        <>
+          <img
+            src={uploadUrl(b.image)}
+            alt={b.title}
+            className="max-h-56 w-full rounded-[12px] border border-line bg-track object-contain"
+          />
+          <div className="flex flex-col gap-1.5">
+            <KeyValue k="Title">{b.title}</KeyValue>
+            <KeyValue k="Status">
+              <StateChip b={b} today={istDayKey()} />
+            </KeyValue>
+            <KeyValue k="Show on">
+              {b.audience === 'login' ? 'Login page (everyone)' : 'Home (members)'}
+            </KeyValue>
+            <KeyValue k="From">{b.starts_on ? formatDay(b.starts_on) : 'Now'}</KeyValue>
+            <KeyValue k="Until">{b.ends_on ? formatDay(b.ends_on) : 'No end date'}</KeyValue>
+            <KeyValue k="Link when tapped">
+              <span className="break-all">{b.link_url || 'None'}</span>
+            </KeyValue>
+            <KeyValue k="Order">{b.sort_order}</KeyValue>
+            <KeyValue k="Added">
+              {formatWhen(b.created_at)}
+              {b.created_by_name ? ` by ${b.created_by_name}` : ''}
+            </KeyValue>
+            <KeyValue k="Last changed">
+              {b.last_edit_at
+                ? `${formatWhen(b.last_edit_at)}${b.last_edit_by_name ? ` by ${b.last_edit_by_name}` : ''}`
+                : 'Never'}
+            </KeyValue>
+          </div>
+          {error ? <ErrorBox error={error} /> : null}
+          {!confirm ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              <Button variant="ghost" onClick={() => onEdit(b)}>
+                Edit
+              </Button>
+              <Button variant="danger" onClick={() => setConfirm(true)}>
+                Delete
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Note tone="warn">
+                Delete "{b.title}"?{b.live ? ' It goes off the app right now.' : ''} This cannot be undone; a
+                copy stays in the audit log.
+              </Note>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Button variant="ghost" disabled={removing} onClick={() => setConfirm(false)}>
+                  Back
+                </Button>
+                <Button variant="danger" busy={removing} onClick={remove}>
+                  Delete banner
+                </Button>
+              </div>
+            </>
+          )}
+        </>
+      )}
+    </Sheet>
+  );
+}
+
 export function BannersPanel() {
   const banners = useQuery({
     queryKey: ['admin', 'banners'],
     queryFn: ({ signal }) => contentApi.adminBanners(signal),
   });
   const [editing, setEditing] = useState<AdminBanner | 'new' | null>(null);
+  const [viewing, setViewing] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const today = istDayKey();
   return (
@@ -193,7 +312,6 @@ export function BannersPanel() {
       ) : (
         <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
           {banners.data.map((b) => {
-            const st = bannerState(b, today);
             return (
               <li
                 key={b.id}
@@ -212,22 +330,39 @@ export function BannersPanel() {
                     {b.ends_on ? ` · until ${formatDay(b.ends_on)}` : ''}
                   </small>
                 </div>
-                {st === 'live' ? (
-                  <Chip tone="ok">Live</Chip>
-                ) : st === 'off' ? (
-                  <Chip tone="muted">Off</Chip>
-                ) : st === 'later' ? (
-                  <Chip tone="wait">Starts {formatDay(b.starts_on!)}</Chip>
-                ) : (
-                  <Chip tone="muted">Ended</Chip>
-                )}
-                <Button size="sm" variant="ghost" onClick={() => (setEditing(b), setMsg(null))}>
-                  Edit
-                </Button>
+                <StateChip b={b} today={today} />
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`View ${b.title}`}
+                    onClick={() => (setViewing(b.id), setMsg(null))}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    aria-label={`Edit ${b.title}`}
+                    onClick={() => (setEditing(b), setMsg(null))}
+                  >
+                    Edit
+                  </Button>
+                </div>
               </li>
             );
           })}
         </ul>
+      )}
+      {viewing !== null && !editing && (
+        <BannerDetails
+          id={viewing}
+          onEdit={(b) => (setViewing(null), setEditing(b))}
+          onClose={(m) => {
+            setViewing(null);
+            if (m) setMsg(m);
+          }}
+        />
       )}
       {editing && (
         <BannerSheet
