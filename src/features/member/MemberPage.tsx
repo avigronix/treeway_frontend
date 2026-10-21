@@ -10,7 +10,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { cx } from '@/lib/cx';
 import { useIsTablet } from '@/lib/useMediaQuery';
 
-// Frame of every active-member page.
+// Frame of every member page (an inactive ID looks at the same pages, Vinay 20 Oct).
 // Phone (< 768 px): the page's top bar + content + bottom menu (design Nav), as before.
 // Tablet / laptop: the app shell (sidebar with groups, collapse, top bar with the profile menu), the page heading,
 // content up to 1200 px wide in the middle; `narrow` pages (forms) are 560 px.
@@ -44,6 +44,17 @@ const GROUPS: NavGroup[] = [
     ],
   },
   { label: 'Account', items: [{ to: '/profile', label: 'Profile and bank', icon: Icon.profile }] },
+];
+
+// An inactive ID (Vinay 20 Oct): "My ID Activation" right under Home.
+const INACTIVE_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { to: '/', label: 'Home', icon: Icon.home, end: true },
+      { to: '/activate', label: 'My ID Activation', icon: Icon.activate },
+    ],
+  },
+  ...GROUPS.slice(1),
 ];
 
 export function MemberPage({
@@ -85,7 +96,7 @@ export function MemberPage({
   return (
     <AppShell
       label="Member menu"
-      groups={GROUPS}
+      groups={me?.status === 'inactive' ? INACTIVE_GROUPS : GROUPS}
       crumbs={pathname === '/' ? [{ label: heading }] : [{ label: 'Home', to: '/' }, { label: heading }]}
       user={{
         name: me?.full_name ?? '',

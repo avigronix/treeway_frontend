@@ -2941,6 +2941,11 @@ export interface components {
             id: number;
             /** User Code */
             user_code: string;
+            /**
+             * Is Company
+             * @description TW1000000, the company's own ID (the root sponsor): view only
+             */
+            is_company: boolean;
             /** Full Name */
             full_name: string;
             /** Mobile */

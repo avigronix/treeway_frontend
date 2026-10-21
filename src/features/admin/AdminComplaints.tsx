@@ -97,7 +97,10 @@ function Categories() {
     }
   });
   return (
-    <Panel title="Complaint types" right={<span className="text-[13px] text-mut">Members pick from this list in the form</span>}>
+    <Panel
+      title="Complaint types"
+      right={<span className="text-[13px] text-mut">Members pick from this list in the form</span>}
+    >
       {cats.isError ? (
         <ErrorBox error={cats.error} onRetry={() => cats.refetch()} />
       ) : !cats.data ? (

@@ -84,6 +84,13 @@ export default function More() {
       }
       desktopTitle="More"
     >
+      {me?.status === 'inactive' ? (
+        <Card className="p-0">
+          <ul className="m-0 list-none p-0">
+            <Item to="/activate" label="My ID Activation" right={<Chip tone="wait">Not active</Chip>} />
+          </ul>
+        </Card>
+      ) : null}
       <SectionTitle>Earnings</SectionTitle>
       <Card flat>
         <ul className="m-0 list-none p-0">

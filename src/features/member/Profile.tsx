@@ -370,7 +370,8 @@ export default function Profile() {
               </span>
               {m.sponsor_name && (
                 <span className="text-xs text-mut">
-                  Sponsor: {m.sponsor_name} · since {formatDay(m.created_at)}
+                  Sponsor: {m.sponsor_name}
+                  {m.sponsor_code ? ` (${m.sponsor_code})` : ''} · since {formatDay(m.created_at)}
                 </span>
               )}
             </div>

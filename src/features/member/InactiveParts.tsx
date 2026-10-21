@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ButtonLink, Card, Chip } from '@/components/ui';
+import { ButtonLink, Card, Chip, CopyButton } from '@/components/ui';
 import { latestRequest, useActivationRequests } from '@/features/activation/useActivation';
 import { MemberPage } from './MemberPage';
 
@@ -26,7 +26,7 @@ export function ActivateBanner() {
         {pending ? 'You can look around meanwhile.' : 'You can look around; activate to start earning.'}
       </span>
       <Link
-        to={pending ? '/activate/pending' : '/activate'}
+        to="/activate"
         className="hit44 flex-none rounded-[10px] bg-g px-3 py-2 text-[13px] font-bold whitespace-nowrap text-white no-underline"
       >
         {pending ? 'See status' : rejected ? 'Send again' : 'Activate ID'}
@@ -54,5 +54,41 @@ export function ActivateFirst() {
         </ButtonLink>
       </Card>
     </MemberPage>
+  );
+}
+
+/** Home of an inactive ID: the new ID, its status and the next step (Vinay 20 Oct). */
+export function IdStatusCard({ code }: { code: string }) {
+  const requests = useActivationRequests();
+  const last = latestRequest(requests.data?.rows);
+  const pending = last?.status === 'pending';
+  const rejected = last?.status === 'rejected';
+  return (
+    <Card className="gap-3 border-gold" role="region" aria-label="My ID status">
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="flex min-w-0 flex-col">
+          <span className="text-[13px] text-mut">Your ID</span>
+          <b className="num text-[24px] tracking-[.04em] text-g">{code}</b>
+        </div>
+        <div className="flex flex-col items-end gap-1.5">
+          <Chip tone={rejected ? 'bad' : 'wait'}>
+            {pending ? 'Payment being checked' : rejected ? 'Payment not approved' : 'Not active'}
+          </Chip>
+          <CopyButton text={code} label="Copy ID" />
+        </div>
+      </div>
+      <ol className="m-0 flex flex-col gap-1 pl-5 text-[13px]">
+        <li>Free account created ✓</li>
+        <li className={pending ? 'text-mut' : 'font-bold'}>
+          {pending
+            ? 'Payment sent: our team is checking it with the bank'
+            : rejected
+              ? 'Your payment was not approved: see the reason and send it again'
+              : 'Activate: pay by UPI / bank, or use a PIN from your sponsor'}
+        </li>
+        <li className="text-mut">ID active: income, daily videos and your referral link start</li>
+      </ol>
+      <ButtonLink to="/activate">{pending ? 'See activation status' : 'Activate my ID'}</ButtonLink>
+    </Card>
   );
 }

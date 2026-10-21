@@ -8,6 +8,7 @@ import { useDashboard, useHistory, useSuper3Status, useTeamSummary, useWalletSum
 import { EtaCard, InviteBox, VideosCard, WalletAmount } from './HomeParts';
 import { BannerStrip } from '@/features/content/BannerStrip';
 import { describeRow, INCOME_LABEL } from './ledger';
+import { IdStatusCard } from './InactiveParts';
 import { MemberPage } from './MemberPage';
 
 const icon = (d: string) => (
@@ -146,7 +147,8 @@ export default function Home() {
       desktopTitle={first ? `Hello, ${first}` : ''}
       desktopSubtitle={
         me
-          ? `${me.user_code}${dash?.rank_name ? ` · ${dash.rank_name}` : ''}${me.sponsor_name ? ` · Sponsor: ${me.sponsor_name}` : ''}`
+          ? // The sponsor is in Profile → ID details, not in the header (Vinay 20 Oct).
+            `${me.user_code} · ${me.status === 'active' ? 'Active' : 'Not active'}${dash?.rank_name ? ` · ${dash.rank_name}` : ''}`
           : ''
       }
       desktopActions={
@@ -162,6 +164,7 @@ export default function Home() {
       className="gap-[11px]"
     >
       {w.isError && <ErrorBox error={w.error} onRetry={() => w.refetch()} />}
+      {me?.status === 'inactive' ? <IdStatusCard code={me.user_code} /> : null}
       <BannerStrip audience="everyone" />
 
       {/* ---------------- phone ---------------- */}

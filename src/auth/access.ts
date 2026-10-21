@@ -4,7 +4,7 @@ import type { Me } from '@/api/users';
 // The backend checks again (inactive IDs get 403 "Inactive", admin APIs need the ADMIN role).
 
 export type Access = 'blocked' | 'admin' | 'doctor' | 'inactive' | 'active';
-export type Area = 'member' | 'activation' | 'admin' | 'doctor';
+export type Area = 'member' | 'admin' | 'doctor';
 
 export function accessOf(me: Pick<Me, 'role' | 'status'>): Access {
   if (me.status === 'blocked' || me.status === 'removed') return 'blocked';
@@ -28,14 +28,12 @@ export function homeOf(access: Access): string {
   }
 }
 
-/** Can this person open this area? An inactive ID may LOOK at the member pages (MemberLayout locks every action)
- * and is the only one who sees the activation pages. */
+/** Can this person open this area? An inactive ID may LOOK at the member pages; ActiveLayout locks every action
+ * and "My ID Activation" (/activate) is a member page too (Vinay 20 Oct). */
 export function canOpen(access: Access, area: Area): boolean {
   switch (area) {
     case 'member':
       return access === 'active' || access === 'inactive';
-    case 'activation':
-      return access === 'inactive';
     case 'admin':
       return access === 'admin';
     case 'doctor':

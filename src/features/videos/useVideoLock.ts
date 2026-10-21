@@ -63,7 +63,9 @@ export function useVideoLock() {
   /** Screen change or app back in front: get a fresh answer if needed, lock if it says so. */
   const checkpoint = useCallback(async () => {
     const cached = qc.getQueryData<VideosToday>(qk.videosToday);
-    const sameDay = !!cached && cached.date === istDayKey();
+    // A cached answer counts only if it came after this layout opened (not the inactive ID's "no lock").
+    const sinceMount = (qc.getQueryState(qk.videosToday)?.dataUpdatedAt ?? 0) >= mountedAt;
+    const sameDay = !!cached && sinceMount && cached.date === istDayKey();
     try {
       const data = await qc.fetchQuery({
         queryKey: qk.videosToday,
@@ -75,7 +77,7 @@ export function useVideoLock() {
     } catch {
       // fail open: the app stays usable, the background retry keeps trying
     }
-  }, [qc]);
+  }, [qc, mountedAt]);
 
   const lastKey = useRef(location.key);
   useEffect(() => {

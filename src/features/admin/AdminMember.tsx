@@ -459,16 +459,19 @@ export default function AdminMember() {
               </span>
             }
             actions={
-              <>
-                <DeductButton d={d.data} />
-                {d.data.member.role === 'USER' && (
+              d.data.member.role === 'USER' ? (
+                <>
+                  <DeductButton d={d.data} />
                   <>
                     <EditContactButton d={d.data} />
                     <ResetPasswordButton d={d.data} />
                     <BlockButton d={d.data} />
                   </>
-                )}
-              </>
+                </>
+              ) : (
+                // TW1000000, the company's own ID (Vinay 20 Oct): shown like a member, view only.
+                <Chip tone="ok">Company ID · view only</Chip>
+              )
             }
           />
           <Tabs

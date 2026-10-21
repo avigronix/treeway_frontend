@@ -46,6 +46,7 @@ export const Icon = {
       <path d="M12 7.5v9M10.8 7.2l-4.6 9.6M13.2 7.2l4.6 9.6" />
     </>,
   ),
+  activate: svg(<path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM8 12l3 3 5-6" />),
   rank: svg(<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />),
   wallet: svg(
     <>

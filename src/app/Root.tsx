@@ -12,7 +12,6 @@ export function Root() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  
   useEffect(
     () =>
       onAuthEvent((e) => {

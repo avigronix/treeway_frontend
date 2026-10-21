@@ -18,7 +18,8 @@ function InactiveLayout() {
   const { pathname } = useLocation();
   return (
     <>
-      <ActivateBanner />
+      {/* Home and "My ID Activation" show the full status themselves. */}
+      {pathname === '/' || pathname.startsWith('/activate') ? null : <ActivateBanner />}
       {isLockedForInactive(pathname) ? <ActivateFirst /> : <Outlet />}
     </>
   );

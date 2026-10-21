@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ComponentType, type LazyExoticComponent } from 'react';
-import { createBrowserRouter, type RouteObject } from 'react-router';
+import { createBrowserRouter, Navigate, type RouteObject } from 'react-router';
 import { Root, RouteError } from '@/app/Root';
 import { AppLoading } from '@/app/AppLoading';
 import { GuestOnly, RequireArea } from '@/auth/guards';
@@ -28,8 +28,6 @@ function guarded(Page: LazyExoticComponent<ComponentType>) {
 }
 
 const Activate = lazy(() => import('@/features/activation/Activate'));
-const Pending = lazy(() => import('@/features/activation/Pending'));
-const MyDetails = lazy(() => import('@/features/activation/MyDetails'));
 const AdminLayout = lazy(() => import('@/features/admin/AdminLayout'));
 const AdminDash = lazy(() => import('@/features/admin/AdminDash'));
 const AdminFunds = lazy(() => import('@/features/admin/AdminFunds'));
@@ -100,15 +98,6 @@ export const routes: RouteObject[] = [
       { path: '/contact', lazy: page(() => import('@/features/content/ContactUs')) },
 
       {
-        element: <RequireArea area="activation" />,
-        children: [
-          { path: '/activate', element: guarded(Activate) },
-          { path: '/activate/pending', element: guarded(Pending) },
-          { path: '/activate/details', element: guarded(MyDetails) },
-        ],
-      },
-
-      {
         path: '/admin',
         element: <RequireArea area="admin" />,
         children: [
@@ -151,6 +140,10 @@ export const routes: RouteObject[] = [
             element: guarded(ActiveLayout),
             children: [
               { index: true, element: guarded(Home) },
+              // "My ID Activation" (inactive IDs; an active one goes Home). Old links land here or on Profile.
+              { path: '/activate', element: guarded(Activate) },
+              { path: '/activate/pending', element: <Navigate to="/activate" replace /> },
+              { path: '/activate/details', element: <Navigate to="/profile" replace /> },
               { path: '/videos', element: guarded(Videos) },
               { path: '/income', element: guarded(Income) },
               { path: '/level-income', element: guarded(LevelIncome) },

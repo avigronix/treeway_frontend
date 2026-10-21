@@ -1,0 +1,1 @@
+import{V as e,s as t}from"./index-DmFjEXjH.js";import{t as n}from"./company-CZ96iNsC.js";function r(){return e({queryKey:t.company,queryFn:({signal:e})=>n.detail(e),staleTime:6e5})}function i(){return e({queryKey:t.config,queryFn:({signal:e})=>n.config(e),staleTime:6e5})}export{i as n,r as t};

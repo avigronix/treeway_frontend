@@ -127,6 +127,11 @@ export default function AdminMembers() {
                 <tr key={m.user_code} className={cx(m.status === 'blocked' && 'bg-[#FFF6F5]')}>
                   <td className={td}>
                     <b>{m.full_name}</b>
+                    {m.is_company ? (
+                      <Chip tone="ok" className="ml-1.5">
+                        Company ID
+                      </Chip>
+                    ) : null}
                     <small className="block text-[12.5px] text-mut">
                       {m.user_code} · {m.mobile}
                     </small>
