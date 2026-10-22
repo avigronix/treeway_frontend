@@ -1,5 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { useMe } from '@/auth/session';
+import { BannerModal } from '@/features/content/BannerModal';
+import { useBannerPopup } from '@/features/content/useBanners';
 import { VideoLockModal, VideosDoneModal } from '@/features/videos/VideoModals';
 import { useVideoLock } from '@/features/videos/useVideoLock';
 import { ActivateBanner, ActivateFirst } from './InactiveParts';
@@ -30,6 +32,8 @@ function LockedVideosLayout() {
   const navigate = useNavigate();
   const today = lock.today.data;
   const locked = lock.show || !!lock.done;
+  // Today's video is showing: the Home banners pop up over it first (Vinay 22 Oct).
+  const banner = useBannerPopup(!lock.done && lock.show && !!today);
 
   return (
     <>
@@ -47,8 +51,14 @@ function LockedVideosLayout() {
           }}
         />
       ) : lock.show && today ? (
-        <VideoLockModal today={today} answeredAt={lock.today.dataUpdatedAt} onAllDone={lock.finish} />
+        <VideoLockModal
+          today={today}
+          answeredAt={lock.today.dataUpdatedAt}
+          onAllDone={lock.finish}
+          behind={banner.open}
+        />
       ) : null}
+      {banner.open ? <BannerModal list={banner.list} onClose={banner.close} /> : null}
     </>
   );
 }

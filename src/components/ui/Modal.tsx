@@ -8,10 +8,13 @@ import { cx } from '@/lib/cx';
  */
 export function Modal({
   labelledBy,
+  behind = false,
   className,
   children,
 }: {
   labelledBy: string;
+  /** Another modal is on top (the dashboard banner): this one stays as it is but cannot be used or read. */
+  behind?: boolean;
   className?: string;
   children: ReactNode;
 }) {
@@ -27,7 +30,11 @@ export function Modal({
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(10,20,13,.72)] p-4">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(10,20,13,.72)] p-4"
+      inert={behind || undefined}
+      aria-hidden={behind || undefined}
+    >
       <div
         ref={box}
         role="dialog"

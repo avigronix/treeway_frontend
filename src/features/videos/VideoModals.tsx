@@ -59,11 +59,14 @@ export function VideoLockModal({
   today,
   answeredAt,
   onAllDone,
+  behind = false,
 }: {
   today: VideosToday;
   /** when `today` came from the server (query dataUpdatedAt) */
   answeredAt: number;
   onAllDone: (r: VideoDone) => void;
+  /** The dashboard banner is open on top: nothing here changes, it just waits. */
+  behind?: boolean;
 }) {
   const titleId = useId();
   const r = useVideoRun(today, answeredAt, onAllDone);
@@ -76,7 +79,7 @@ export function VideoLockModal({
   const last = n >= today.per_day;
 
   return (
-    <Modal labelledBy={titleId}>
+    <Modal labelledBy={titleId} behind={behind}>
       <div className="flex items-center justify-between gap-2.5">
         <h2 id={titleId} className="m-0 text-[19px] font-bold">
           Today's video
