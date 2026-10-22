@@ -3,7 +3,7 @@ import { qk } from '@/api/keys';
 import { videosApi, type TodayVideo } from '@/api/videos';
 import { MemberPage } from '@/features/member/MemberPage';
 import { Card, ErrorBox, Money, Note, Skeleton, SkeletonList } from '@/components/ui';
-import { formatDay } from '@/lib/dates';
+import { formatDay, formatTime } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { cx } from '@/lib/cx';
 
@@ -91,6 +91,10 @@ export default function Videos() {
 
           {!t.eligible && t.day_no !== null && t.day_no > t.days_total ? (
             <Note>Your {t.days_total} days of daily videos are complete.</Note>
+          ) : !t.ready && t.starts_at ? (
+            <Note>
+              Today's videos start at {formatTime(t.starts_at)}. Watch all 4 before 12 midnight for the ₹20.
+            </Note>
           ) : !t.ready ? (
             <Note tone="warn">Today's videos are not ready yet. The app is open for you today.</Note>
           ) : null}

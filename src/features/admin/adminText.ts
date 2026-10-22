@@ -1,3 +1,4 @@
+import { formatDayTime } from '@/lib/dates';
 import { formatCount } from '@/lib/money';
 import { CODE_RE } from '@/lib/validators';
 
@@ -119,18 +120,42 @@ export function monthRange(key: string, todayKey: string): { from: string; to: s
 }
 
 /** Checks the banner form (the server checks again). Pure, unit tested. */
+/** Banner start / end as the server wants it: India time "2026-10-22T18:00", '' = none. An empty time means the
+ * start of the day (12:00 AM) for a start, and 11:59 PM for an end. */
+export function bannerTime(date: string, time: string, end: boolean): string {
+  return date ? `${date}T${time || (end ? '23:59' : '00:00')}` : '';
+}
+
 export function checkBanner(
-  f: { title: string; starts_on: string; ends_on: string; link_url: string; sort_order: string },
+  f: {
+    title: string;
+    start_date: string;
+    start_time: string;
+    end_date: string;
+    end_time: string;
+    link_url: string;
+    sort_order: string;
+  },
   needImage: boolean,
   hasImage: boolean,
+  /** the end saved before (edit): an unchanged past end is fine (switching an ended banner off) */
+  savedEnd = '',
+  nowKey = '',
 ) {
   const n = Number(f.sort_order);
+  const start = bannerTime(f.start_date, f.start_time, false);
+  const end = bannerTime(f.end_date, f.end_time, true);
   return {
     title: f.title.trim().length >= 2 ? undefined : 'Write a short title (2 letters or more).',
-    ends_on:
-      f.starts_on && f.ends_on && f.ends_on < f.starts_on
-        ? 'The end date must be on or after the start date.'
-        : undefined,
+    start: f.start_time && !f.start_date ? 'Pick the start date too.' : undefined,
+    end:
+      f.end_time && !f.end_date
+        ? 'Pick the end date too.'
+        : end && end !== savedEnd && nowKey && end <= nowKey
+          ? 'That end time is already over. Pick a later one, or leave it empty.'
+          : start && end && end <= start
+            ? 'The end time must be after the start time.'
+            : undefined,
     link_url:
       !f.link_url.trim() || /^(https:\/\/|\/)/.test(f.link_url.trim())
         ? undefined
@@ -140,15 +165,15 @@ export function checkBanner(
   };
 }
 
-/** "Live", "Off", "Starts 20 Oct" or "Ended": the state of a banner today. */
-export function bannerState(
-  b: { is_active: boolean; live: boolean; starts_on?: string | null; ends_on?: string | null },
-  todayKey: string,
-): 'live' | 'off' | 'later' | 'ended' {
-  if (b.live) return 'live';
-  if (!b.is_active) return 'off';
-  if (b.starts_on && b.starts_on > todayKey) return 'later';
-  return 'ended';
+/** The server's banner state as a chip: "Live", "Scheduled · 22 Oct, 6:00 PM", "Ended", "Off". */
+export function bannerChip(b: { state: 'live' | 'scheduled' | 'ended' | 'off'; starts_at: string | null }): {
+  tone: 'ok' | 'wait' | 'muted';
+  text: string;
+} {
+  if (b.state === 'live') return { tone: 'ok', text: 'Live' };
+  if (b.state === 'scheduled')
+    return { tone: 'wait', text: b.starts_at ? `Scheduled · ${formatDayTime(b.starts_at)}` : 'Scheduled' };
+  return { tone: 'muted', text: b.state === 'ended' ? 'Ended' : 'Off' };
 }
 
 /** AdminShop tabs and the server filter each one sends. */

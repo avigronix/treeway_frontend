@@ -36,6 +36,23 @@ export function istDayKeyAfter(days: number, now: Date = new Date()): string {
   return keyFmt.format(new Date(now.getTime() + days * DAY_MS));
 }
 
+const hmFmt = new Intl.DateTimeFormat('en-GB', {
+  timeZone: TZ,
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
+
+/** IST time of day as HH:MM (24 h), for time inputs. */
+export function istTimeKey(value: string | number | Date = new Date()): string {
+  return hmFmt.format(toDate(value));
+}
+
+/** "22 Oct, 6:00 PM" (IST): scheduled banners and videos. */
+export function formatDayTime(value: string | number | Date, now: Date = new Date()): string {
+  return `${formatDay(value, now)}, ${formatTime(value)}`;
+}
+
 /** "12:05 PM" */
 export function formatTime(value: string | number | Date): string {
   return timeFmt.format(toDate(value)).replace(/\s?(am|pm)$/i, (m) => ` ${m.trim().toUpperCase()}`);

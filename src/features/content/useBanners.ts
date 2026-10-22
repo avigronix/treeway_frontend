@@ -3,12 +3,16 @@ import { useQuery } from '@tanstack/react-query';
 import { contentApi } from '@/api/content';
 import { istDayKey } from '@/lib/dates';
 
-/** Live banners for Home ("everyone") or the login page ("login"); one cache for the strip and the modal. */
+/** Live banners for Home ("everyone") or the login page ("login"); one cache for the strip and the modal.
+ * Asked again every minute while the app is open, so a scheduled banner starts / stops within a minute of its
+ * time (the server's clock decides). */
+export const BANNER_REFRESH_MS = 60_000;
 export function useLiveBanners(audience: 'everyone' | 'login') {
   return useQuery({
     queryKey: ['banners', audience],
     queryFn: ({ signal }) => contentApi.banners(audience, signal),
-    staleTime: 5 * 60_000,
+    staleTime: BANNER_REFRESH_MS,
+    refetchInterval: BANNER_REFRESH_MS,
   });
 }
 

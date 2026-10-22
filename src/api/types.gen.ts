@@ -1537,6 +1537,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/videos/schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Video Schedule
+         * @description The last 3 days and the next `days` days: links set, start time, status.
+         */
+        get: operations["video_schedule_api_v1_admin_videos_schedule_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/videos/{day}": {
         parameters: {
             query?: never;
@@ -1547,11 +1567,17 @@ export interface paths {
         get?: never;
         /**
          * Set Day Videos
-         * @description Sets (or replaces) the given slots for a day. Past days cannot be changed.
+         * @description Sets (or replaces) the given slots and / or the start time of a day. Past days cannot be changed. A day
+         *     members can already watch keeps its start time or moves it earlier (they may be half way).
          */
         put: operations["set_day_videos_api_v1_admin_videos__day__put"];
         post?: never;
-        delete?: never;
+        /**
+         * Delete Day Videos
+         * @description Removes a day's links and start time, if members cannot watch them yet (the day then uses the last
+         *     full day's links, as any day without links).
+         */
+        delete: operations["delete_day_videos_api_v1_admin_videos__day__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2276,7 +2302,8 @@ export interface paths {
         put?: never;
         /**
          * Add Banner
-         * @description Form: title, audience (everyone | login), starts_on, ends_on, is_active, sort_order, link_url; file: image.
+         * @description Form: title, audience (everyone | login), starts_at, ends_at (IST "2026-10-22T18:00"), is_active, sort_order,
+         *     link_url; file: image.
          */
         post: operations["add_banner_api_v1_admin_banners_post"];
         delete?: never;
@@ -2617,10 +2644,16 @@ export interface components {
              * @enum {string}
              */
             audience: "everyone" | "login";
-            /** Starts On */
-            starts_on: string | null;
-            /** Ends On */
-            ends_on: string | null;
+            /**
+             * Starts At
+             * @description Starts showing (null = at once)
+             */
+            starts_at: string | null;
+            /**
+             * Ends At
+             * @description Stops showing (null = no end)
+             */
+            ends_at: string | null;
             /** Is Active */
             is_active: boolean;
             /** Sort Order */
@@ -2631,8 +2664,13 @@ export interface components {
              */
             updated_at: string;
             /**
+             * State
+             * @enum {string}
+             */
+            state: "live" | "scheduled" | "ended" | "off";
+            /**
              * Live
-             * @description On and inside its dates today
+             * @description On and inside its start / end time now
              */
             live: boolean;
         };
@@ -2654,10 +2692,16 @@ export interface components {
              * @enum {string}
              */
             audience: "everyone" | "login";
-            /** Starts On */
-            starts_on: string | null;
-            /** Ends On */
-            ends_on: string | null;
+            /**
+             * Starts At
+             * @description Starts showing (null = at once)
+             */
+            starts_at: string | null;
+            /**
+             * Ends At
+             * @description Stops showing (null = no end)
+             */
+            ends_at: string | null;
             /** Is Active */
             is_active: boolean;
             /** Sort Order */
@@ -2668,8 +2712,13 @@ export interface components {
              */
             updated_at: string;
             /**
+             * State
+             * @enum {string}
+             */
+            state: "live" | "scheduled" | "ended" | "off";
+            /**
              * Live
-             * @description On and inside its dates today
+             * @description On and inside its start / end time now
              */
             live: boolean;
             /**
@@ -3557,6 +3606,16 @@ export interface components {
             videos: components["schemas"]["AdminVideo"][];
             /** Per Day */
             per_day: number;
+            /**
+             * Start Time
+             * @description IST; null = 12:00 AM
+             */
+            start_time: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "scheduled" | "live" | "ended" | "incomplete";
             /** Missing Days */
             missing_days: components["schemas"]["MissingVideoDay"][];
         };
@@ -4215,7 +4274,12 @@ export interface components {
         /** DayVideosModel */
         DayVideosModel: {
             /** Videos */
-            videos: components["schemas"]["VideoItemModel"][];
+            videos?: components["schemas"]["VideoItemModel"][];
+            /**
+             * Start Time
+             * @description IST, HH:MM; when the day's videos go live (none = 12:00 AM)
+             */
+            start_time?: string | null;
         };
         /** DevCodeModel */
         DevCodeModel: {
@@ -4789,6 +4853,15 @@ export interface components {
             status: number;
             /** Data */
             data: components["schemas"]["TopSponsor"][];
+        };
+        /** Envelope[List[VideoScheduleDay]] */
+        Envelope_List_VideoScheduleDay__: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            /** Data */
+            data: components["schemas"]["VideoScheduleDay"][];
         };
         /** Envelope[List[str]] */
         Envelope_List_str__: {
@@ -7907,6 +7980,32 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** VideoScheduleDay */
+        VideoScheduleDay: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * Links
+             * @description Links set (of per_day)
+             */
+            links: number;
+            /** Per Day */
+            per_day: number;
+            /**
+             * Start Time
+             * @description IST; null = 12:00 AM
+             */
+            start_time: string | null;
+            /**
+             * Status
+             * @description incomplete = fewer links than needed: members get the last full day's videos
+             * @enum {string}
+             */
+            status: "scheduled" | "live" | "ended" | "incomplete";
+        };
         /** VideoStarted */
         VideoStarted: {
             /** Slot */
@@ -7943,9 +8042,14 @@ export interface components {
             eligible: boolean;
             /**
              * Ready
-             * @description False = no complete set of links in the last 30 days: no lock, no ₹20
+             * @description False = no complete set of links in the last 30 days, or today's start time is still ahead: no lock, no ₹20 yet
              */
             ready: boolean;
+            /**
+             * Starts At
+             * @description Today's videos go live at this time (only while it is ahead)
+             */
+            starts_at: string | null;
             /**
              * Links From
              * @description Date of the links used when today has no full set
@@ -10781,6 +10885,37 @@ export interface operations {
             };
         };
     };
+    video_schedule_api_v1_admin_videos_schedule_get: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_VideoScheduleDay__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     set_day_videos_api_v1_admin_videos__day__put: {
         parameters: {
             query?: never;
@@ -10795,6 +10930,37 @@ export interface operations {
                 "application/json": components["schemas"]["DayVideosModel"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_MissingDays_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_day_videos_api_v1_admin_videos__day__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                day: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

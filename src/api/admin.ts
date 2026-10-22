@@ -147,8 +147,14 @@ export const adminApi = {
   /** One day's videos (default: tomorrow, IST) and the days still missing links. */
   videos: (day: string | undefined, signal?: AbortSignal) =>
     api<AdminVideos>('/admin/videos', { query: { day }, signal }),
-  saveVideos: (day: string, videos: VideoItem[]) =>
-    api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'PUT', json: { videos } }),
+  /** Links and / or the day's start time (India time "09:00"; omitted = unchanged). */
+  saveVideos: (day: string, videos: VideoItem[], start_time?: string) =>
+    api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'PUT', json: { videos, start_time } }),
+  /** Removes a day's links and time (only while members cannot watch them yet). */
+  deleteVideos: (day: string) => api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'DELETE' }),
+  /** The last 3 days and the next `days`: links set, start time, status. */
+  videoSchedule: (days: number, signal?: AbortSignal) =>
+    api<Schema<'VideoScheduleDay'>[]>('/admin/videos/schedule', { query: { days }, signal }),
 };
 
 /** Admin query keys all start with 'admin' (a MONEY_KEYS root): refreshMoney() refreshes them too. */
@@ -165,4 +171,5 @@ export const adminKeys = {
   admins: ['admin', 'admins'] as const,
   audit: ['admin', 'audit'] as const,
   videos: (day: string | undefined) => ['admin', 'videos', day ?? 'tomorrow'] as const,
+  videoSchedule: ['admin', 'videos', 'schedule'] as const,
 };

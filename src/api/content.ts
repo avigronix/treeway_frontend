@@ -14,8 +14,10 @@ export const uploadUrl = (path: string) => `/uploads/${path.replace(/^\/+/, '')}
 export interface BannerFields {
   title: string;
   audience: 'everyone' | 'login';
-  starts_on: string;
-  ends_on: string;
+  /** India time "2026-10-22T18:00", or '' = shows at once */
+  starts_at: string;
+  /** India time "2026-10-25T23:59", or '' = no end */
+  ends_at: string;
   link_url: string;
   is_active: boolean;
   sort_order: number;

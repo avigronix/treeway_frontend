@@ -104,6 +104,18 @@ export function useVideoLock() {
     return () => clearTimeout(t);
   }, [day, qc]);
 
+  // Today's start time (Vinay 22 Oct): ask the server again right after it; the lock then shows at the next
+  // screen change or when the app comes back to the front, like at midnight.
+  const startsAt = d?.starts_at;
+  useEffect(() => {
+    if (!startsAt) return;
+    const t = setTimeout(
+      () => void qc.invalidateQueries({ queryKey: qk.videosToday }),
+      Math.max(0, new Date(startsAt).getTime() - Date.now()) + 2_000,
+    );
+    return () => clearTimeout(t);
+  }, [startsAt, qc]);
+
   const finish = useCallback((result: VideoDone) => setDone(result), []);
   const close = useCallback(() => {
     setDone(null);

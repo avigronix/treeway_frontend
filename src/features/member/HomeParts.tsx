@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import type { Super3Status } from '@/api/member';
 import { Button, Money, Skeleton } from '@/components/ui';
+import { formatTime } from '@/lib/dates';
 import { formatCount, formatMoney } from '@/lib/money';
 import { cx } from '@/lib/cx';
 import { mainJourney, useVideosToday } from './data';
@@ -77,6 +78,10 @@ export function VideosCard({ className }: { className?: string }) {
         </b>
       );
       foot = `Finish all for ${formatMoney(v.reward)}`;
+    } else if (v.eligible && v.starts_at) {
+      // A start time is set for today (Vinay 22 Oct): no lock before it.
+      head = <b className="text-lg">{formatTime(v.starts_at)}</b>;
+      foot = 'Starts today';
     } else if (v.day_no !== null && v.day_no > v.days_total) {
       head = <b className="text-lg">Complete</b>;
       foot = `All ${v.days_total} days are over`;

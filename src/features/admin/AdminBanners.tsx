@@ -17,19 +17,21 @@ import {
   Empty,
   KeyValue,
 } from '@/components/ui';
-import { formatDay, formatWhen, istDayKey } from '@/lib/dates';
+import { formatDayTime, formatWhen, istDayKey, istTimeKey } from '@/lib/dates';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import { usePageClamp } from '@/lib/usePageClamp';
 import { Pager, Panel } from './AdminParts';
-import { bannerState, checkBanner } from './adminText';
+import { bannerChip, bannerTime, checkBanner } from './adminText';
 
 // J3 "Home banners" (add, view, edit, delete: Vinay 21 Oct) and "Contact us messages" (AdminContent).
 
 type Form = {
   title: string;
   audience: 'everyone' | 'login';
-  starts_on: string;
-  ends_on: string;
+  start_date: string;
+  start_time: string;
+  end_date: string;
+  end_time: string;
   link_url: string;
   sort_order: string;
   is_active: boolean;
@@ -37,8 +39,11 @@ type Form = {
 const fromBanner = (b: AdminBanner | null): Form => ({
   title: b?.title ?? '',
   audience: b?.audience ?? 'everyone',
-  starts_on: b?.starts_on ?? '',
-  ends_on: b?.ends_on ?? '',
+  // Banner times are India time, to the minute (Vinay 22 Oct).
+  start_date: b?.starts_at ? istDayKey(b.starts_at) : '',
+  start_time: b?.starts_at ? istTimeKey(b.starts_at) : '',
+  end_date: b?.ends_at ? istDayKey(b.ends_at) : '',
+  end_time: b?.ends_at ? istTimeKey(b.ends_at) : '',
   link_url: b?.link_url ?? '',
   sort_order: String(b?.sort_order ?? 0),
   is_active: b?.is_active ?? true,
@@ -46,8 +51,8 @@ const fromBanner = (b: AdminBanner | null): Form => ({
 const toFields = (f: Form): BannerFields => ({
   title: f.title.trim(),
   audience: f.audience,
-  starts_on: f.starts_on,
-  ends_on: f.ends_on,
+  starts_at: bannerTime(f.start_date, f.start_time, false),
+  ends_at: bannerTime(f.end_date, f.end_time, true),
   link_url: f.link_url.trim(),
   sort_order: Number(f.sort_order.trim()),
   is_active: f.is_active,
@@ -66,7 +71,8 @@ function BannerSheet({ b, onClose }: { b: AdminBanner | null; onClose: (msg?: st
       setF((x) => ({ ...x, [k]: v }));
 
   const [save, saving] = useSingleFlight(async () => {
-    const e = checkBanner(f, !b, !!image);
+    const nowKey = `${istDayKey()}T${istTimeKey()}`;
+    const e = checkBanner(f, !b, !!image, b ? toFields(fromBanner(b)).ends_at : '', nowKey);
     setErrs(e);
     if (Object.values(e).some(Boolean) || imageErr) return;
     setError(null);
@@ -108,21 +114,50 @@ function BannerSheet({ b, onClose }: { b: AdminBanner | null; onClose: (msg?: st
         value={f.audience}
         onChange={(e) => set('audience')(e.target.value as Form['audience'])}
       />
-      <div className="grid grid-cols-2 gap-2.5">
-        <TextField
-          label="From (optional)"
-          type="date"
-          value={f.starts_on}
-          onChange={(e) => set('starts_on')(e.target.value)}
-        />
-        <TextField
-          label="Until (optional)"
-          type="date"
-          value={f.ends_on}
-          onChange={(e) => set('ends_on')(e.target.value)}
-          error={errs.ends_on}
-        />
-      </div>
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+        <legend className="mb-1 text-[13px] font-bold">Starts showing (India time)</legend>
+        <div className="grid grid-cols-2 gap-2.5">
+          <TextField
+            label="Start date"
+            type="date"
+            value={f.start_date}
+            onChange={(e) => {
+              set('start_date')(e.target.value);
+              if (!e.target.value) set('start_time')(''); // no date = no time either
+            }}
+            error={errs.start}
+          />
+          <TextField
+            label="Start time"
+            type="time"
+            value={f.start_time}
+            onChange={(e) => set('start_time')(e.target.value)}
+          />
+        </div>
+        <span className="text-xs text-mut">Empty = shows as soon as it is saved. No time = 12:00 AM.</span>
+      </fieldset>
+      <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+        <legend className="mb-1 text-[13px] font-bold">Stops showing (India time)</legend>
+        <div className="grid grid-cols-2 gap-2.5">
+          <TextField
+            label="End date"
+            type="date"
+            value={f.end_date}
+            onChange={(e) => {
+              set('end_date')(e.target.value);
+              if (!e.target.value) set('end_time')(''); // no date = no time either
+            }}
+            error={errs.end}
+          />
+          <TextField
+            label="End time"
+            type="time"
+            value={f.end_time}
+            onChange={(e) => set('end_time')(e.target.value)}
+          />
+        </div>
+        <span className="text-xs text-mut">Empty = no end. No time = 11:59 PM.</span>
+      </fieldset>
       <TextField
         label="Link when tapped (optional)"
         placeholder="/shop or https://…"
@@ -164,12 +199,10 @@ function BannerSheet({ b, onClose }: { b: AdminBanner | null; onClose: (msg?: st
   );
 }
 
-function StateChip({ b, today }: { b: AdminBanner; today: string }) {
-  const st = bannerState(b, today);
-  if (st === 'live') return <Chip tone="ok">Live</Chip>;
-  if (st === 'off') return <Chip tone="muted">Off</Chip>;
-  if (st === 'later') return <Chip tone="wait">Starts {formatDay(b.starts_on!)}</Chip>;
-  return <Chip tone="muted">Ended</Chip>;
+/** Live / Scheduled · time / Ended / Off, as the server says (its clock decides, not the phone's). */
+function StateChip({ b }: { b: AdminBanner }) {
+  const c = bannerChip(b);
+  return <Chip tone={c.tone}>{c.text}</Chip>;
 }
 
 /** Details of one banner (fresh from the server), with Edit and Delete. Delete asks once more first. */
@@ -227,13 +260,13 @@ function BannerDetails({
           <div className="flex flex-col gap-1.5">
             <KeyValue k="Title">{b.title}</KeyValue>
             <KeyValue k="Status">
-              <StateChip b={b} today={istDayKey()} />
+              <StateChip b={b} />
             </KeyValue>
             <KeyValue k="Show on">
               {b.audience === 'login' ? 'Login page (everyone)' : 'Home (members)'}
             </KeyValue>
-            <KeyValue k="From">{b.starts_on ? formatDay(b.starts_on) : 'Now'}</KeyValue>
-            <KeyValue k="Until">{b.ends_on ? formatDay(b.ends_on) : 'No end date'}</KeyValue>
+            <KeyValue k="From">{b.starts_at ? formatDayTime(b.starts_at) : 'As soon as saved'}</KeyValue>
+            <KeyValue k="Until">{b.ends_at ? formatDayTime(b.ends_at) : 'No end'}</KeyValue>
             <KeyValue k="Link when tapped">
               <span className="break-all">{b.link_url || 'None'}</span>
             </KeyValue>
@@ -288,7 +321,6 @@ export function BannersPanel() {
   const [editing, setEditing] = useState<AdminBanner | 'new' | null>(null);
   const [viewing, setViewing] = useState<number | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
-  const today = istDayKey();
   return (
     <Panel
       title="Home banners"
@@ -326,11 +358,11 @@ export function BannersPanel() {
                   <b className="truncate">{b.title}</b>
                   <small className="text-[12.5px] text-mut">
                     {b.audience === 'login' ? 'Login page' : 'Home'}
-                    {b.starts_on ? ` · from ${formatDay(b.starts_on)}` : ''}
-                    {b.ends_on ? ` · until ${formatDay(b.ends_on)}` : ''}
+                    {b.starts_at ? ` · from ${formatDayTime(b.starts_at)}` : ''}
+                    {b.ends_at ? ` · until ${formatDayTime(b.ends_at)}` : ''}
                   </small>
                 </div>
-                <StateChip b={b} today={today} />
+                <StateChip b={b} />
                 <div className="flex gap-2">
                   <Button
                     size="sm"
