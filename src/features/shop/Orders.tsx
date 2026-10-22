@@ -155,7 +155,12 @@ function OrderCard({ o }: { o: Order }) {
         <div className="flex flex-col gap-2 text-[13px]">
           {o.status === 'cancelled' ? (
             <>
-              <span>{o.cancel_reason ?? 'Cancelled'} · money returned to your wallets</span>
+              <span>{o.cancel_reason ?? 'Cancelled'}</span>
+              {paidFrom(o).map(([w, v]) => (
+                <span key={w} className="font-bold text-ok">
+                  <Money value={v} /> back to your {w} Wallet ✓
+                </span>
+              ))}
               {o.courier_refund_due && !o.courier_refunded_at && (
                 <span className="text-mut">
                   Delivery money <Money value={o.courier_charge} />: the team sends it back from the bank.

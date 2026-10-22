@@ -147,7 +147,9 @@ function OrderSheet({ o, onClose }: { o: AdminOrder; onClose: (msg?: string) => 
           />
         </>
       )}
-      {(step === 'payment' || step === 'pack' || step === 'ship') && (
+      {/* Needed to reject a payment or to cancel: so whenever the order can still be cancelled, including
+          while the member is asked to pay the delivery again (Vinay 22 Oct: that order could not be cancelled). */}
+      {(o.status === 'placed' || o.status === 'packed') && (
         <TextAreaField
           label="Note (needed to reject or cancel)"
           value={remark}
@@ -264,9 +266,11 @@ export default function AdminShop() {
               ? c?.payment_to_check
               : t.value === 'pack'
                 ? c?.to_pack
-                : t.value === 'refund'
-                  ? c?.courier_refunds_due
-                  : undefined,
+                : t.value === 'member'
+                  ? c?.waiting_for_member
+                  : t.value === 'refund'
+                    ? c?.courier_refunds_due
+                    : undefined,
         }))}
       />
       <Panel>

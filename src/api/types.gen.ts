@@ -6411,6 +6411,11 @@ export interface components {
             to_pack: number;
             /** Payment To Check */
             payment_to_check: number;
+            /**
+             * Waiting For Member
+             * @description Delivery payment rejected: the member must pay again (7 days); the admin can still cancel it
+             */
+            waiting_for_member: number;
             /** On The Way */
             on_the_way: number;
             /** Delivered This Month */

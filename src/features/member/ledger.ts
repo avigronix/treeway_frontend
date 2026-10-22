@@ -169,9 +169,17 @@ export function describeRow(row: LedgerRow, now: Date = new Date()): RowView {
         note: wallet,
       };
     case 'shop_order':
-      return { title: 'Shop order', detail: when, note: wallet };
+      return {
+        title: 'Shop order',
+        detail: m.order_no ? `${str(m.order_no)} · ${when}` : when,
+        note: wallet,
+      };
     case 'shop_refund':
-      return { title: 'Order refund', detail: when, note: wallet };
+      return {
+        title: 'Order cancelled · money back',
+        detail: m.order_no ? `${str(m.order_no)} · ${when}` : when,
+        note: wallet,
+      };
     default:
       return {
         title: row.type.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase()),

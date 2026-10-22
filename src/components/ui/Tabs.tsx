@@ -7,7 +7,8 @@ export interface TabItem<V extends string> {
   count?: number;
 }
 
-/** Segmented tabs (theme .tabs). Arrow keys move between tabs. */
+/** Segmented tabs (theme .tabs). Arrow keys move between tabs. Too many for the screen: the row scrolls sideways
+ * (it never makes the page wider, which zooms a phone out). */
 export function Tabs<V extends string>({
   items,
   value,
@@ -38,7 +39,10 @@ export function Tabs<V extends string>({
     <div
       role="tablist"
       aria-label={label}
-      className={cx('flex flex-none gap-1 rounded-xl bg-tabs p-1', className)}
+      className={cx(
+        'flex flex-none gap-1 overflow-x-auto rounded-xl bg-tabs p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+        className,
+      )}
     >
       {items.map((t, i) => {
         const on = t.value === value;
@@ -55,7 +59,7 @@ export function Tabs<V extends string>({
             onClick={() => onChange(t.value)}
             onKeyDown={(e) => onKey(e, i)}
             className={cx(
-              'hit44 flex h-10 flex-1 cursor-pointer items-center justify-center gap-1 rounded-[9px] border-0 text-sm font-semibold',
+              'hit44 flex h-10 flex-1 shrink-0 cursor-pointer items-center justify-center gap-1 rounded-[9px] border-0 px-2.5 text-sm font-semibold whitespace-nowrap',
               on ? 'bg-white text-gt shadow-[0_1px_2px_rgba(20,54,27,.12)]' : 'bg-transparent text-tabink',
             )}
           >

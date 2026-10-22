@@ -155,6 +155,8 @@ export function bannerState(
 export const ORDER_TABS = [
   { value: 'payment', label: 'Payment to check', q: { status: 'placed', courier_status: 'pending' } },
   { value: 'pack', label: 'To pack', q: { status: 'placed', courier_status: 'approved' } },
+  // Delivery payment rejected: the member pays again within 7 days, or the admin cancels (money back).
+  { value: 'member', label: 'Waiting for member', q: { status: 'placed', courier_status: 'rejected' } },
   { value: 'packed', label: 'Packed', q: { status: 'packed' } },
   { value: 'shipped', label: 'On the way', q: { status: 'shipped' } },
   { value: 'delivered', label: 'Delivered', q: { status: 'delivered' } },
