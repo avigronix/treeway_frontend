@@ -32,7 +32,7 @@ const QUICK = [
     label: 'My team',
     d: 'M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6',
   },
-  { to: '/level-income', label: 'Levels', d: 'M4 20v-6M10 20V10M16 20V4M22 20H2' },
+  { to: '/income?tab=levels', label: 'Levels', d: 'M4 20v-6M10 20V10M16 20V4M22 20H2' },
   { to: '/shop', label: 'Shop', d: 'M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0' },
   {
     to: '/ask-doctor',

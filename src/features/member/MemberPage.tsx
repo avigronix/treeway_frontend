@@ -21,7 +21,6 @@ const GROUPS: NavGroup[] = [
     label: 'Earnings',
     items: [
       { to: '/income', label: 'My income', icon: Icon.income },
-      { to: '/level-income', label: 'Level income', icon: Icon.levels },
       { to: '/team', label: 'My team', icon: Icon.team },
       { to: '/super3', label: 'Super 3', icon: Icon.super3 },
       { to: '/rank', label: 'Rank and Royalty', icon: Icon.rank },

@@ -1,21 +1,26 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import type { IncomePeriod } from '@/api/member';
 import { Card, ErrorBox, Money, Pills, Skeleton, Tabs } from '@/components/ui';
 import { useIncomeSummary } from './data';
 import { HistoryList } from './HistoryList';
 import { INCOME_LABEL } from './ledger';
+import { LevelIncomeTab } from './LevelIncome';
 import { MemberPage } from './MemberPage';
 
 // B2 "My income": totals per income type for a period, and every income row (after the 10% cut).
-const PERIODS: { value: Exclude<IncomePeriod, 'all'>; label: string; heading: string }[] = [
+// Two tabs (Vinay 26 Oct): "All income" (total + by type, "All time" too) and "Level income" (25 levels);
+// the tab is in the address (?tab=levels) so a link opens the right one.
+const PERIODS: { value: IncomePeriod; label: string; heading: string }[] = [
   { value: 'today', label: 'Today', heading: "Today's income" },
   { value: 'week', label: 'This week', heading: "This week's income" },
   { value: 'month', label: 'This month', heading: "This month's income" },
+  { value: 'all', label: 'All time', heading: 'All income so far' },
 ];
+type IncomeTab = 'all' | 'levels';
 // Summary rows in the design's order; some link to their own page.
 const SUMMARY: { type: string; to?: string }[] = [
-  { type: 'level_income', to: '/level-income' },
+  { type: 'level_income', to: '/income?tab=levels' },
   { type: 'super3_income', to: '/super3' },
   { type: 'single_leg' },
   { type: 'royalty', to: '/rank' },
@@ -24,7 +29,26 @@ const SUMMARY: { type: string; to?: string }[] = [
 ];
 
 export default function Income() {
-  const [period, setPeriod] = useState<Exclude<IncomePeriod, 'all'>>('month');
+  const [params, setParams] = useSearchParams();
+  const tab: IncomeTab = params.get('tab') === 'levels' ? 'levels' : 'all';
+  return (
+    <MemberPage title="My income" subtitle="Every amount is after the 10% cut" className="gap-[11px]">
+      <Tabs
+        label="Income"
+        value={tab}
+        onChange={(v) => setParams(v === 'levels' ? { tab: 'levels' } : {}, { replace: true })}
+        items={[
+          { value: 'all', label: 'All income' },
+          { value: 'levels', label: 'Level income' },
+        ]}
+      />
+      {tab === 'levels' ? <LevelIncomeTab /> : <AllIncome />}
+    </MemberPage>
+  );
+}
+
+function AllIncome() {
+  const [period, setPeriod] = useState<IncomePeriod>('month');
   const [type, setType] = useState<string>('all');
   const sum = useIncomeSummary(period);
   const all = useIncomeSummary('all'); // counts for the filter pills
@@ -40,7 +64,7 @@ export default function Income() {
   ];
 
   return (
-    <MemberPage title="My income" subtitle="Every amount is after the 10% cut" className="gap-[11px]">
+    <>
       <Tabs label="Period" value={period} onChange={setPeriod} items={PERIODS} />
       <Card className="gap-2">
         {sum.isError ? (
@@ -87,6 +111,6 @@ export default function Income() {
         emptyTitle="No income yet"
         emptyText="You earn when someone joins with your link."
       />
-    </MemberPage>
+    </>
   );
 }

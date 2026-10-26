@@ -816,6 +816,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/super3/ids": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Super3 Ids
+         * @description Every ID on the Super 3 boards (Vinay, 26 Oct): one row per journey (main ID, each recycle ID, the
+         *     company's spots) with its current board, spot and progress. Newest first, 20 a page. Each journey is joined
+         *     to its current spot through super3_nodes (journey_id, board).
+         */
+        get: operations["super3_ids_api_v1_admin_super3_ids_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/super3/stats": {
         parameters: {
             query?: never;
@@ -5088,6 +5110,14 @@ export interface components {
             status: number;
             data: components["schemas"]["Page_SingleLegRun_"];
         };
+        /** Envelope[Page[Super3IdRow]] */
+        Envelope_Page_Super3IdRow__: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["Page_Super3IdRow_"];
+        };
         /** Envelope[Page[TdsNoPan]] */
         Envelope_Page_TdsNoPan__: {
             /** Msg */
@@ -6820,6 +6850,25 @@ export interface components {
              */
             next_cursor: string | null;
         };
+        /** Page[Super3IdRow] */
+        Page_Super3IdRow_: {
+            /** Rows */
+            rows: components["schemas"]["Super3IdRow"][];
+            /**
+             * Total
+             * @description Rows in the whole list
+             */
+            total: number;
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+            /**
+             * Next Cursor
+             * @description Send as ?cursor= for the next page; null = no more rows
+             */
+            next_cursor: string | null;
+        };
         /** Page[TdsNoPan] */
         Page_TdsNoPan_: {
             /** Rows */
@@ -7603,6 +7652,64 @@ export interface components {
             spot: number;
             /** To Go */
             to_go: number;
+        };
+        /** Super3IdRow */
+        Super3IdRow: {
+            /** Journey Id */
+            journey_id: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "main" | "recycle" | "company";
+            /**
+             * User Code
+             * @description The company's spots show TW1000000
+             */
+            user_code: string;
+            /** Full Name */
+            full_name: string;
+            /**
+             * Member Joined
+             * @description When the member joined Treeway (null for the company)
+             */
+            member_joined: string | null;
+            /** Member Status */
+            member_status: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             * @description When this ID entered Super 3 (Board 1)
+             */
+            started_at: string;
+            /**
+             * Board
+             * @description Board now (the 'level' in Super 3)
+             */
+            board: number;
+            /**
+             * Position
+             * @description Spot number on that board
+             */
+            position: number | null;
+            /**
+             * Children
+             * @description Spots filled below it (of 3)
+             */
+            children: number | null;
+            /** Spot Status */
+            spot_status: ("filling" | "full") | null;
+            /** On Board Since */
+            on_board_since: string | null;
+            /**
+             * Finished
+             * @description All boards done
+             */
+            finished: boolean;
+            /** Boards Done */
+            boards_done: number;
+            /** Boards Total */
+            boards_total: number;
         };
         /** Super3Money */
         Super3Money: {
@@ -9537,6 +9644,43 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_Super3Tree_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    super3_ids_api_v1_admin_super3_ids_get: {
+        parameters: {
+            query?: {
+                search?: string | null;
+                board?: number | null;
+                status?: string | null;
+                kind?: string | null;
+                cursor?: string | null;
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Page_Super3IdRow__"];
                 };
             };
             /** @description Validation Error */

@@ -61,7 +61,6 @@ const ActiveLayout = lazy(() => import('@/features/member/ActiveLayout'));
 const Home = lazy(() => import('@/features/member/Home'));
 const Videos = lazy(() => import('@/features/videos/Videos'));
 const Income = lazy(() => import('@/features/member/Income'));
-const LevelIncome = lazy(() => import('@/features/member/LevelIncome'));
 const Team = lazy(() => import('@/features/member/Team'));
 const Wallet = lazy(() => import('@/features/member/Wallet'));
 const Profile = lazy(() => import('@/features/member/Profile'));
@@ -150,7 +149,8 @@ export const routes: RouteObject[] = [
               { path: '/activate/details', element: <Navigate to="/profile" replace /> },
               { path: '/videos', element: guarded(Videos) },
               { path: '/income', element: guarded(Income) },
-              { path: '/level-income', element: guarded(LevelIncome) },
+              // Level income is a tab of My income (Vinay 26 Oct).
+              { path: '/level-income', element: <Navigate to="/income?tab=levels" replace /> },
               { path: '/team', element: guarded(Team) },
               { path: '/wallet', element: guarded(Wallet) },
               { path: '/profile', element: guarded(Profile) },

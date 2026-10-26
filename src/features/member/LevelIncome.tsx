@@ -3,17 +3,16 @@ import { Card, ErrorBox, Money, Note, Skeleton, SkeletonList } from '@/component
 import { formatCount, formatMoney } from '@/lib/money';
 import { useConfig } from '@/features/auth/usePublic';
 import { useLevelIncome, useTeamSummary } from './data';
-import { MemberPage } from './MemberPage';
 import { levelRate } from './levels';
 
 // B3 "Level income": up to 25 levels. People per level from /users/team-summary, money from
 // /wallet/level-income: per level `this_month` and `net` (= all-time, the design's EARNED column).
-// Rates from /config/public.
+// Rates from /config/public. A tab of "My income" (Vinay 26 Oct); /level-income opens that tab.
 
 const LEVELS = 25;
 const HINT: Record<number, string> = { 1: 'People you added', 2: 'Added by your level 1' };
 
-export default function LevelIncome() {
+export function LevelIncomeTab() {
   const li = useLevelIncome();
   const team = useTeamSummary();
   const config = useConfig().data;
@@ -25,12 +24,8 @@ export default function LevelIncome() {
   const lastFilled = Math.max(0, ...[...people.keys()].filter((k) => (people.get(k)?.total ?? 0) > 0));
 
   return (
-    <MemberPage
-      title="Level income"
-      subtitle="Up to 25 levels, every time someone joins"
-      back="/income"
-      className="gap-[11px]"
-    >
+    <>
+      <span className="text-[13px] text-mut">Up to 25 levels, every time someone joins</span>
       {li.isError && <ErrorBox error={li.error} onRetry={() => li.refetch()} />}
       <div className="grid grid-cols-2 gap-2.5">
         <Card className="gap-0.5 p-3">
@@ -125,6 +120,6 @@ export default function LevelIncome() {
           . Tap a level to see its people.
         </Note>
       )}
-    </MemberPage>
+    </>
   );
 }

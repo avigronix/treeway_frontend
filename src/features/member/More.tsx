@@ -109,7 +109,7 @@ export default function More() {
       <Card flat>
         <ul className="m-0 list-none p-0">
           <Item to="/team" label="My team" icon={Icon.team} />
-          <Item to="/level-income" label="Level income" icon={Icon.levels} />
+          <Item to="/income?tab=levels" label="Level income" icon={Icon.levels} />
           <Item to="/rank" label="Rank and Royalty" icon={Icon.rank} />
           <Item
             to="/pins"

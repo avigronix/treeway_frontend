@@ -21,6 +21,14 @@ export type CompanyFields = Omit<CompanyDetail, 'qr_path'>;
 
 type Q = Record<string, string | number | undefined>;
 
+export interface Super3IdsQuery {
+  search?: string;
+  board?: number;
+  status?: 'filling' | 'full' | 'finished';
+  kind?: 'main' | 'recycle' | 'company';
+  page: number;
+}
+
 export const adminApi = {
   dashboard: (signal?: AbortSignal) => api<AdminDashboard>('/admin/dashboard', { signal }),
 
@@ -112,6 +120,9 @@ export const adminApi = {
     apiEnvelope<Schema<'PinCodes'> | ApprovalWaiting>('/admin/pins/issue', { json: body }),
 
   super3Stats: (signal?: AbortSignal) => api<Schema<'Super3Stats'>>('/admin/super3/stats', { signal }),
+  /** Every ID on the boards (main, recycle, company), 20 a page, newest first. */
+  super3Ids: (q: Super3IdsQuery, signal?: AbortSignal) =>
+    api<Schema<'Page_Super3IdRow_'>>('/admin/super3/ids', { query: { limit: 20, ...q }, signal }),
   /** Any spot on any board (members see only their own trees; the admin sees all). */
   super3Tree: (board: number, position: number, signal?: AbortSignal) =>
     api<Schema<'Super3Tree-Output'>>('/super3/tree', { query: { board, position }, signal }),
@@ -166,6 +177,7 @@ export const adminKeys = {
   member: (code: string) => ['admin', 'member', code] as const,
   pins: (q: Q) => ['admin', 'pins', q] as const,
   super3: ['admin', 'super3'] as const,
+  super3Ids: (q: Super3IdsQuery) => ['admin', 'super3', 'ids', q] as const,
   super3Tree: (board: number, position: number) => ['admin', 'super3', 'tree', board, position] as const,
   settings: ['admin', 'settings'] as const,
   admins: ['admin', 'admins'] as const,
