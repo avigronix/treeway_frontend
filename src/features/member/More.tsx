@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { endSession, useMe } from '@/auth/session';
+import { Icon } from '@/components/layout/icons';
 import { Button, ButtonLink, Card, Chip, Note, SectionTitle, Skeleton } from '@/components/ui';
 import { isInstalled, promptInstall, useCanInstall } from '@/lib/install';
 import { formatCount } from '@/lib/money';
@@ -10,15 +11,23 @@ import { useComplaintsMatrix, useDashboard, useVideosToday, useWalletSummary } f
 import { MemberPage } from './MemberPage';
 
 // "More" menu: earnings, benefits and help, install, coming soon, WhatsApp group, log out.
+// Every option has the same icon as in the laptop sidebar (one line style); "Coming soon" rows have none, they
+// are not options (Vinay 26 Oct).
 
-function Item({ to, label, right }: { to: string; label: string; right?: ReactNode }) {
+function Item({ to, label, icon, right }: { to: string; label: string; icon: ReactNode; right?: ReactNode }) {
   return (
     <li className="border-b border-line2 last:border-b-0">
       <Link
         to={to}
         className="flex min-h-[58px] items-center justify-between gap-2.5 px-3.5 py-3 text-ink no-underline"
       >
-        <b className="text-[13px]">{label}</b>
+        <span
+          aria-hidden="true"
+          className="flex size-9 flex-none items-center justify-center rounded-[10px] bg-tint text-g"
+        >
+          {icon}
+        </span>
+        <b className="min-w-0 flex-1 text-[13px]">{label}</b>
         {right ?? (
           <span aria-hidden="true" className="text-mut">
             ›
@@ -87,19 +96,25 @@ export default function More() {
       {me?.status === 'inactive' ? (
         <Card className="p-0">
           <ul className="m-0 list-none p-0">
-            <Item to="/activate" label="My ID Activation" right={<Chip tone="wait">Not active</Chip>} />
+            <Item
+              to="/activate"
+              label="My ID Activation"
+              icon={Icon.activate}
+              right={<Chip tone="wait">Not active</Chip>}
+            />
           </ul>
         </Card>
       ) : null}
       <SectionTitle>Earnings</SectionTitle>
       <Card flat>
         <ul className="m-0 list-none p-0">
-          <Item to="/team" label="My team" />
-          <Item to="/level-income" label="Level income" />
-          <Item to="/rank" label="Rank and Royalty" />
+          <Item to="/team" label="My team" icon={Icon.team} />
+          <Item to="/level-income" label="Level income" icon={Icon.levels} />
+          <Item to="/rank" label="Rank and Royalty" icon={Icon.rank} />
           <Item
             to="/pins"
             label="My PINs"
+            icon={Icon.pins}
             right={
               wallet && wallet.ready_pins > 0 ? (
                 <Chip tone="gold">{formatCount(wallet.ready_pins)} ready</Chip>
@@ -114,16 +129,18 @@ export default function More() {
           <Item
             to="/videos"
             label="Daily videos"
+            icon={Icon.videos}
             right={videos?.all_done ? <Chip tone="ok">Today done</Chip> : undefined}
           />
-          <Item to="/shop" label="Shop and my orders" />
-          <Item to="/ask-doctor" label="Ask a doctor" />
+          <Item to="/shop" label="Shop and my orders" icon={Icon.shop} />
+          <Item to="/ask-doctor" label="Ask a doctor" icon={Icon.doctor} />
           <Item
             to="/complaints"
             label="Complaints"
+            icon={Icon.complaints}
             right={open > 0 ? <Chip tone="wait">{open} open</Chip> : undefined}
           />
-          <Item to="/profile" label="Profile and bank" />
+          <Item to="/profile" label="Profile and bank" icon={Icon.profile} />
         </ul>
       </Card>
       <InstallCard />
@@ -162,6 +179,7 @@ export default function More() {
             navigate('/login', { replace: true });
           }}
         >
+          {Icon.logout}
           Log out
         </Button>
       </div>
