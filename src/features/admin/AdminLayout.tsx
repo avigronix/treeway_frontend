@@ -222,6 +222,14 @@ type Queue = Schema<'AdminQueue'>;
 function groups(q: Queue | undefined): NavGroup[] {
   return [
     { items: [{ to: '/admin', label: 'Dashboard', icon: Icon.dash, end: true }] },
+    // Members first, then money (Vinay 26 Oct: the order an admin looks things up in).
+    {
+      label: 'Members',
+      items: [
+        { to: '/admin/members', label: 'Members', icon: Icon.team },
+        { to: '/admin/super3', label: 'Super 3', icon: Icon.super3 },
+      ],
+    },
     {
       label: 'Money',
       items: [
@@ -239,13 +247,6 @@ function groups(q: Queue | undefined): NavGroup[] {
         },
         { to: '/admin/pins', label: 'PINs', icon: Icon.pins },
         { to: '/admin/income', label: 'Income and TDS', icon: Icon.income },
-      ],
-    },
-    {
-      label: 'Members',
-      items: [
-        { to: '/admin/members', label: 'Members', icon: Icon.team },
-        { to: '/admin/super3', label: 'Super 3', icon: Icon.super3 },
       ],
     },
     {
