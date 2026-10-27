@@ -1736,6 +1736,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shop/orders/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Order Preview
+         * @description Checkout (Vinay, 27 Oct: "my Income Wallet money is not used"): the products' total and how the wallets
+         *     pay it, Product first, then Fund, then Income, with the same split the order uses. Nothing is held.
+         */
+        post: operations["order_preview_api_v1_shop_orders_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/shop/orders": {
         parameters: {
             query?: never;
@@ -4260,12 +4281,12 @@ export interface components {
             joins_this_month: number;
             /**
              * Ids In Super3
-             * @description IDs on the boards: members' main + recycle IDs, plus the company ID TW1000000 (counted once) when it holds spots
+             * @description IDs on the boards, as in the admin 'IDs in Super 3' list: members' main + recycle IDs and the company's IDs
              */
             ids_in_super3: number;
             /**
              * Company Spots
-             * @description Spots of the company ID (spot #1 on each board + company recycles)
+             * @description Of those, the company's IDs (spot #1 on each board + company recycles)
              */
             company_spots: number;
             /**
@@ -5013,6 +5034,14 @@ export interface components {
             status: number;
             data: components["schemas"]["OrderPlaced"];
         };
+        /** Envelope[OrderPreview] */
+        Envelope_OrderPreview_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["OrderPreview"];
+        };
         /** Envelope[Order] */
         Envelope_Order_: {
             /** Msg */
@@ -5133,14 +5162,6 @@ export interface components {
             status: number;
             data: components["schemas"]["Page_SingleLegRun_"];
         };
-        /** Envelope[Page[Super3IdRow]] */
-        Envelope_Page_Super3IdRow__: {
-            /** Msg */
-            msg: string;
-            /** Status */
-            status: number;
-            data: components["schemas"]["Page_Super3IdRow_"];
-        };
         /** Envelope[Page[TdsNoPan]] */
         Envelope_Page_TdsNoPan__: {
             /** Msg */
@@ -5260,6 +5281,14 @@ export interface components {
             /** Status */
             status: number;
             data: components["schemas"]["SponsorCheck"];
+        };
+        /** Envelope[Super3IdsPage] */
+        Envelope_Super3IdsPage_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["Super3IdsPage"];
         };
         /** Envelope[Super3Stats] */
         Envelope_Super3Stats_: {
@@ -6576,6 +6605,13 @@ export interface components {
             /** Qty */
             qty: number;
         };
+        /** OrderItemModel */
+        OrderItemModel: {
+            /** Product Id */
+            product_id: number;
+            /** Qty */
+            qty: number;
+        };
         /** OrderPlaced */
         OrderPlaced: {
             /** Id */
@@ -6587,6 +6623,35 @@ export interface components {
             paid: components["schemas"]["WalletSplit"];
             /** Courier Charge */
             courier_charge: number;
+        };
+        /** OrderPreview */
+        OrderPreview: {
+            /** Items Total */
+            items_total: number;
+            /** Order Max */
+            order_max: number;
+            /**
+             * Over Max
+             * @description More than one order may hold
+             */
+            over_max: boolean;
+            /** @description What is in each wallet now */
+            wallets: components["schemas"]["WalletSplit"];
+            /** @description What each wallet pays: Product first, then Fund, then Income */
+            pays: components["schemas"]["WalletSplit"];
+            /**
+             * Short
+             * @description Missing amount; 0 = the wallets cover it
+             */
+            short: number;
+        };
+        /**
+         * OrderPreviewModel
+         * @description Checkout: which wallets will pay for these products (the order itself checks again).
+         */
+        OrderPreviewModel: {
+            /** Items */
+            items: components["schemas"]["OrderItemModel"][];
         };
         /** OrderStatusModel */
         OrderStatusModel: {
@@ -6872,25 +6937,6 @@ export interface components {
         Page_SingleLegRun_: {
             /** Rows */
             rows: components["schemas"]["SingleLegRun"][];
-            /**
-             * Total
-             * @description Rows in the whole list
-             */
-            total: number;
-            /** Page */
-            page: number;
-            /** Limit */
-            limit: number;
-            /**
-             * Next Cursor
-             * @description Send as ?cursor= for the next page; null = no more rows
-             */
-            next_cursor: string | null;
-        };
-        /** Page[Super3IdRow] */
-        Page_Super3IdRow_: {
-            /** Rows */
-            rows: components["schemas"]["Super3IdRow"][];
             /**
              * Total
              * @description Rows in the whole list
@@ -7690,6 +7736,21 @@ export interface components {
             /** To Go */
             to_go: number;
         };
+        /** Super3IdCounts */
+        Super3IdCounts: {
+            /** Total */
+            total: number;
+            /** Members */
+            members: number;
+            /** Company */
+            company: number;
+            /** Filling */
+            filling: number;
+            /** Full */
+            full: number;
+            /** Finished */
+            finished: number;
+        };
         /** Super3IdRow */
         Super3IdRow: {
             /** Journey Id */
@@ -7748,6 +7809,27 @@ export interface components {
             /** Boards Total */
             boards_total: number;
         };
+        /** Super3IdsPage */
+        Super3IdsPage: {
+            /** Rows */
+            rows: components["schemas"]["Super3IdRow"][];
+            /**
+             * Total
+             * @description Rows in the whole list
+             */
+            total: number;
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+            /**
+             * Next Cursor
+             * @description Send as ?cursor= for the next page; null = no more rows
+             */
+            next_cursor: string | null;
+            /** @description The whole pool, not just this filter: filling + full + finished = total */
+            counts: components["schemas"]["Super3IdCounts"];
+        };
         /** Super3Money */
         Super3Money: {
             /** On Hold */
@@ -7774,12 +7856,12 @@ export interface components {
             waiting_second_share: number;
             /**
              * Ids On Boards
-             * @description Members' main + recycle IDs, plus the company ID TW1000000 (once)
+             * @description IDs on the boards (the 'IDs in Super 3' list total), company's included
              */
             ids_on_boards: number;
             /**
              * Company Spots
-             * @description Spots of the company ID (spot #1 on each board + company recycles)
+             * @description Of those, the company's IDs (spot #1 on each board + company recycles)
              */
             company_spots: number;
         };
@@ -9717,7 +9799,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Envelope_Page_Super3IdRow__"];
+                    "application/json": components["schemas"]["Envelope_Super3IdsPage_"];
                 };
             };
             /** @description Validation Error */
@@ -11351,6 +11433,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_CourierQuote_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    order_preview_api_v1_shop_orders_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderPreviewModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_OrderPreview_"];
                 };
             };
             /** @description Validation Error */

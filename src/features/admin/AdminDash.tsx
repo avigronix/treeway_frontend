@@ -314,7 +314,7 @@ export default function AdminDash() {
             to="/admin/super3"
             label="IDs in Super 3"
             value={formatCount(d.joins.ids_in_super3)}
-            small={`${d.joins.company_spots ? 'incl. company ID · ' : ''}${formatCount(d.joins.boards_full)} boards full`}
+            small={`incl. ${formatCount(d.joins.company_spots)} company IDs`}
           />
         </Kpis>
       )}

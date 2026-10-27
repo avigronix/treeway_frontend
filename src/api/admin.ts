@@ -122,7 +122,7 @@ export const adminApi = {
   super3Stats: (signal?: AbortSignal) => api<Schema<'Super3Stats'>>('/admin/super3/stats', { signal }),
   /** Every ID on the boards (main, recycle, company), 20 a page, newest first. */
   super3Ids: (q: Super3IdsQuery, signal?: AbortSignal) =>
-    api<Schema<'Page_Super3IdRow_'>>('/admin/super3/ids', { query: { limit: 20, ...q }, signal }),
+    api<Schema<'Super3IdsPage'>>('/admin/super3/ids', { query: { limit: 20, ...q }, signal }),
   /** Any spot on any board (members see only their own trees; the admin sees all). */
   super3Tree: (board: number, position: number, signal?: AbortSignal) =>
     api<Schema<'Super3Tree-Output'>>('/super3/tree', { query: { board, position }, signal }),

@@ -84,7 +84,7 @@ export default function Shop() {
   const [search, setSearch] = useState('');
   const [cat, setCat] = useState('');
   const q = useDebounced(search.trim(), 400);
-  const product = useWalletSummary().data?.product;
+  const w = useWalletSummary().data;
   const max = useConfig().data?.shop.order_max;
   const cats = useQuery({
     queryKey: shopKeys.categories,
@@ -100,9 +100,18 @@ export default function Shop() {
 
   return (
     <MemberPage title="Shop" subtitle="Buy with your Product Wallet" back="/" className="gap-3 pb-28">
-      <Card className="flex-row items-center justify-between gap-2 py-3">
-        <span className="text-[13px] text-mut">Product Wallet</span>
-        <b>{product === undefined ? '…' : <Money value={product} />}</b>
+      {/* The Fund and Income Wallets pay what the Product Wallet cannot (Vinay 27 Oct): show all three. */}
+      <Card className="gap-1.5" role="group" aria-label="Your wallets for shopping">
+        <div className="flex items-center justify-between gap-2.5">
+          <span className="text-[13px] text-mut">Product Wallet</span>
+          <b>{w ? <Money value={w.product} /> : '…'}</b>
+        </div>
+        {w && (w.fund > 0 || w.income > 0) && (
+          <span className="text-xs text-mut">
+            Short? Your Fund Wallet (<Money value={w.fund} />) and Income Wallet (<Money value={w.income} />)
+            pay the rest.
+          </span>
+        )}
       </Card>
       <div className="flex items-end gap-2">
         <TextField

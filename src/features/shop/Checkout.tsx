@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, type UseQueryResult } from '@tanstack/react-query';
 import { ApiError } from '@/api/client';
 import { refreshMoney } from '@/api/queryClient';
 import { shopApi, type CourierQuote } from '@/api/shop';
+import type { Schema } from '@/api/schema';
 import { uploadUrl } from '@/api/content';
 import {
   Button,
@@ -13,13 +14,13 @@ import {
   FilePicker,
   Money,
   Note,
+  Skeleton,
   TextAreaField,
   TextField,
 } from '@/components/ui';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import { useMe } from '@/auth/session';
 import { useConfig } from '@/features/auth/usePublic';
-import { useWalletSummary } from '@/features/member/data';
 import { MemberPage } from '@/features/member/MemberPage';
 import { CompanyPay } from '@/features/money/PayDetails';
 import { cart, cartTotal, MAX_QTY, useCartPrescription, useMemberCart } from './cart';
@@ -28,13 +29,50 @@ import { checkCheckout, type CheckoutFields } from './shopText';
 // D3 "Checkout": address, PIN code → delivery charge (from the server), pay the delivery by UPI (UTR +
 // screenshot), place the order. The server prices the order again and picks the wallets.
 
+const WALLET_NAME = { product: 'Product Wallet', fund: 'Fund Wallet', income: 'Income Wallet' } as const;
+
+/** "You pay ₹947: ₹40 from Product Wallet + ₹907 from Income Wallet", or how much is missing. */
+function PaySplit({ pay }: { pay: UseQueryResult<Schema<'OrderPreview'>> }) {
+  if (pay.isError) return <ErrorBox error={pay.error} onRetry={() => pay.refetch()} />;
+  const p = pay.data;
+  if (!p) return <Skeleton className="h-12 w-full" />;
+  const parts = (['product', 'fund', 'income'] as const).filter((k) => p.pays[k] > 0);
+  return (
+    <div className="flex flex-col gap-1.5" aria-label="How you pay">
+      <span className="text-xs text-mut">
+        Paid from your Product Wallet first, then your Fund, then your Income Wallet.
+      </span>
+      <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px]">
+        {parts.map((k) => (
+          <li key={k} className="flex justify-between gap-2.5">
+            <span>
+              {WALLET_NAME[k]}{' '}
+              <span className="text-mut">
+                (has <Money value={p.wallets[k]} />)
+              </span>
+            </span>
+            <b className="num">
+              <Money value={p.pays[k]} />
+            </b>
+          </li>
+        ))}
+      </ul>
+      {p.short > 0 && (
+        <Note tone="warn">
+          Your wallets are <Money value={p.short} /> short for these products. Remove something, or add funds
+          first.
+        </Note>
+      )}
+    </div>
+  );
+}
+
 export default function Checkout() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const me = useMe().data;
   const lines = useMemberCart();
   const rx = useCartPrescription();
-  const w = useWalletSummary().data;
   const max = useConfig().data?.shop.order_max;
   const [f, setF] = useState<CheckoutFields>({ name: '', mobile: '', address: '', pincode: '', utr: '' });
   const [touched, setTouched] = useState(false);
@@ -69,7 +107,14 @@ export default function Checkout() {
   });
 
   const total = cartTotal(lines); // shown only
-  const allWallets = w ? w.product + w.fund + w.income : undefined; // shown only
+  // How the wallets pay, from the server (Vinay 27 Oct: "my Income Wallet money is not used").
+  const items = lines.map((l) => ({ product_id: l.id, qty: l.qty }));
+  const pay = useQuery({
+    queryKey: ['shop', 'preview', items],
+    queryFn: ({ signal }) => shopApi.preview(items, signal),
+    enabled: items.length > 0,
+    staleTime: 0,
+  });
 
   const [place, placing] = useSingleFlight(async () => {
     setError(null);
@@ -174,13 +219,7 @@ export default function Checkout() {
             You can order up to <Money value={max} /> at a time. Remove something, or the order is refused.
           </Note>
         )}
-        {allWallets !== undefined && allWallets < total && (
-          <Note tone="warn">Your wallets together have less than the products cost.</Note>
-        )}
-        <span className="text-xs text-mut">
-          Paid from your Product Wallet first. Product Wallet short? The rest comes from your Fund, then your
-          Income Wallet.
-        </span>
+        <PaySplit pay={pay} />
       </Card>
 
       <Card className="gap-2.5">

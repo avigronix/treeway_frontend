@@ -164,6 +164,40 @@ function PoolPanel({ boards }: { boards: number }) {
         ) : null
       }
     >
+      {/* The whole pool, counted like the rows below (Vinay 27 Oct: the boxes must add up with the list).
+          Tap a box to show those IDs. */}
+      {list.data && (
+        <div className="grid grid-cols-2 gap-2.5 desk:grid-cols-4" aria-label="IDs by status">
+          {(
+            [
+              [
+                'all',
+                'IDs on boards',
+                list.data.counts.total,
+                `${formatCount(list.data.counts.members)} members' · ${formatCount(list.data.counts.company)} company`,
+              ],
+              ['filling', 'Filling', list.data.counts.filling, 'waiting for 3 below'],
+              ['full', 'Full', list.data.counts.full, '3 below, moving up'],
+              ['finished', `All ${boards} done`, list.data.counts.finished, 'journey complete'],
+            ] as const
+          ).map(([value, label, n, small]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={status === value}
+              onClick={() => (setStatus(value), reset())}
+              className={cx(
+                'flex cursor-pointer flex-col gap-0.5 rounded-[12px] border p-3 text-left',
+                status === value ? 'border-g bg-tint' : 'border-line bg-white',
+              )}
+            >
+              <span className="text-[12.5px] text-mut">{label}</span>
+              <b className="num text-[22px] leading-tight">{formatCount(n)}</b>
+              <small className="text-[12px] text-mut">{small}</small>
+            </button>
+          ))}
+        </div>
+      )}
       <FilterBar>
         <TextField
           fieldClassName="w-full desk:w-[240px]"
@@ -283,13 +317,6 @@ export default function AdminSuper3() {
       ) : (
         <>
           <Kpis>
-            <Kpi
-              label="Total IDs on boards"
-              value={formatCount(d.ids_on_boards)}
-              small={`${formatCount(d.journeys.recycle)} recycle IDs${d.company_spots ? ` · incl. company ID (${formatCount(d.company_spots)} spots)` : ''}`}
-            />
-            <Kpi label="Still filling" value={formatCount(d.boards.reduce((a, b) => a + b.filling, 0))} />
-            <Kpi label="Boards full" value={formatCount(d.boards.reduce((a, b) => a + b.full, 0))} />
             <Kpi label="Paid out (wallet part)" value={<Money value={d.money.wallet_part_paid} />} />
             <Kpi
               label="Self Help Fund"
@@ -304,7 +331,7 @@ export default function AdminSuper3() {
           </Kpis>
           <Panel title="Each board at a glance">
             <Table
-              head={['Board', 'IDs in line', 'Filling', 'Full', 'Next spot', 'Speed (7 days)']}
+              head={['Board', 'Spots taken', 'Spots filling', 'Spots full', 'Next spot', 'Speed (7 days)']}
               min={620}
             >
               {d.boards.map((b) => (
@@ -321,7 +348,8 @@ export default function AdminSuper3() {
               ))}
             </Table>
             <Note>
-              Spot #1 on every board belongs to the company ID. Its board income goes to the company.
+              This table counts spots: an ID that moved to Board 2 still keeps its full spot on Board 1. Spot
+              #1 on every board belongs to the company ID; its board income goes to the company.
             </Note>
           </Panel>
           <PoolPanel boards={Math.max(8, d.boards.length)} />

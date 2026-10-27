@@ -26,6 +26,9 @@ export const shopApi = {
   courier: (pincode: string, signal?: AbortSignal) =>
     api<CourierQuote>('/shop/courier', { query: { pincode }, signal }),
   /** One order. A used UTR is refused (409), so a repeat can never make a second order. */
+  /** Checkout: how the wallets pay these products (Product, then Fund, then Income). The server's split. */
+  preview: (items: { product_id: number; qty: number }[], signal?: AbortSignal) =>
+    api<Schema<'OrderPreview'>>('/shop/orders/preview', { json: { items }, signal }),
   placeOrder: (f: OrderForm) => {
     const form = new FormData();
     form.set('items', JSON.stringify(f.items));
