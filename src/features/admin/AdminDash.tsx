@@ -8,6 +8,7 @@ import { formatDay, formatFullDate, formatTime, formatWhen, istDayKey } from '@/
 import { formatCount } from '@/lib/money';
 import { cx } from '@/lib/cx';
 import { useAdminDashboard, usePayments } from './adminData';
+import { rankCountLate } from '@/features/member/rankText';
 import { AdminTitle, Kpi, Kpis, Panel, Table, td } from './AdminParts';
 import { PaymentDetail } from './AdminFunds';
 import { monthLabel, pnlLines, searchTarget } from './adminText';
@@ -231,6 +232,15 @@ export default function AdminDash() {
           Daily videos missing:{' '}
           {q.video_days_missing.map((v) => `${formatDay(v.date)} (${v.missing})`).join(', ')}. Add them before
           12 midnight, or members cannot finish the login videos.
+        </Note>
+      )}
+
+      {d && rankCountLate(d.joins.rank_count_at) && (
+        <Note tone="warn">
+          The night rank count{' '}
+          {d.joins.rank_count_at ? `last ran ${formatWhen(d.joins.rank_count_at)}` : 'has not run yet'}. It
+          runs every night at 12:20 AM, so members' ranks are not up to date. Check that the treeway-scheduler
+          process is running on the server.
         </Note>
       )}
 

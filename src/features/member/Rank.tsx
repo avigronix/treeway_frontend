@@ -5,6 +5,7 @@ import { formatDay, formatWhen, ordinal } from '@/lib/dates';
 import { formatCount } from '@/lib/money';
 import { monthName } from './ledger';
 import { MemberPage } from './MemberPage';
+import { directsLines } from './rankText';
 
 // B5 "Rank and Royalty" from GET /rank/me (numbers from last night's count, `as_of`).
 
@@ -50,6 +51,15 @@ export default function Rank() {
                 </span>
               </div>
               <Bar value={d.next.counted} max={d.next.need} label={`Progress to ${d.next.name}`} gold thick />
+              {d.rank === 0 && (
+                <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px]" aria-label="Your directs">
+                  {directsLines(d.directs, d.next_count_at).map((l, i) => (
+                    <li key={l} className={i === 0 ? 'font-bold' : 'text-mut'}>
+                      {l}
+                    </li>
+                  ))}
+                </ul>
+              )}
               {d.next.one_line_max !== null && (
                 <span className="text-[13px] text-mut">
                   50:50 rule: we count at most {formatCount(d.next.one_line_max)} from one team line.

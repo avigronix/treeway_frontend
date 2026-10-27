@@ -4273,6 +4273,11 @@ export interface components {
              * @description Full spots (3 below filled), the company's included
              */
             boards_full: number;
+            /**
+             * Rank Count At
+             * @description The last night rank count (treeway-scheduler, 12:20 AM). Older than a day = the job is not running
+             */
+            rank_count_at: string | null;
         };
         /** DashTeam */
         DashTeam: {
@@ -4324,6 +4329,24 @@ export interface components {
             email: string;
             /** Purpose */
             purpose: string;
+        };
+        /** DirectsNow */
+        DirectsNow: {
+            /**
+             * Joined
+             * @description Directs who joined (not removed), active or not
+             */
+            joined: number;
+            /**
+             * Active Now
+             * @description Active right now (an ID activated today counts from tonight's count)
+             */
+            active_now: number;
+            /**
+             * Counted
+             * @description Active directs in last night's count (what the rank uses)
+             */
+            counted: number;
         };
         /** DoctorAssignModel */
         DoctorAssignModel: {
@@ -6375,6 +6398,13 @@ export interface components {
             pay_day: number;
             last_royalty: components["schemas"]["LastRoyalty"] | null;
             s3_level: components["schemas"]["S3LevelProgress"];
+            directs: components["schemas"]["DirectsNow"];
+            /**
+             * Next Count At
+             * Format: date-time
+             * @description The next night count (IST 12:20 AM)
+             */
+            next_count_at: string;
         };
         /** MyRank */
         "MyRank-Output": {
@@ -6400,6 +6430,13 @@ export interface components {
             pay_day: number;
             last_royalty: components["schemas"]["LastRoyalty"] | null;
             s3_level: components["schemas"]["S3LevelProgress"];
+            directs: components["schemas"]["DirectsNow"];
+            /**
+             * Next Count At
+             * Format: date-time
+             * @description The next night count (IST 12:20 AM)
+             */
+            next_count_at: string;
         };
         /** MyWithdrawal */
         MyWithdrawal: {
