@@ -94,6 +94,10 @@ export default function Rank() {
                   )}
                 </li>
               ))}
+              <li className="px-3.5 py-2.5 text-[12.5px] text-mut">
+                Ranks go in order: each rank also needs the one before it, so Silver and up need your{' '}
+                {formatCount(d.ranks[0]?.need ?? 0)} active directs too.
+              </li>
             </ul>
           </Card>
 
