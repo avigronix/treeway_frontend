@@ -12,7 +12,8 @@ import * as v from '@/lib/validators';
 import { AuthPage } from './AuthShell';
 
 // Treeway support set this member's password (Vinay, 28 Oct): the member must choose their own before anything
-// else (the server answers 403 "NewPassword" to every other screen until then).
+// else (the server answers 403 "NewPassword" to every other screen until then). The text never says support
+// changed it (Vinay, 28 Oct: no notice to the member).
 
 const firstError = (r: { success: boolean; error?: { issues: { message: string }[] } }) =>
   r.success ? undefined : r.error?.issues[0]?.message;
@@ -31,7 +32,7 @@ export default function NewPassword() {
   const [save, saving] = useSingleFlight(async () => {
     setError(null);
     const e = {
-      given: given ? undefined : 'Enter the password Treeway support gave you.',
+      given: given ? undefined : 'Enter your current password.',
       pw: firstError(v.password.safeParse(pw)) ?? (pw === given ? 'Choose a different password.' : undefined),
       pw2: pw === pw2 ? undefined : 'Passwords do not match.',
     };
@@ -62,12 +63,12 @@ export default function NewPassword() {
         }}
       >
         <Note>
-          Treeway support set a password for your ID{me.data ? ` ${me.data.user_code}` : ''}. Choose your own
-          now; only you should know it.
+          Choose your own password for your ID{me.data ? ` ${me.data.user_code}` : ''}. Only you should know
+          it.
         </Note>
         <Card className="gap-3">
           <PasswordField
-            label="Password from support"
+            label="Current password"
             autoComplete="current-password"
             value={given}
             onChange={(e) => setGiven(e.target.value)}
