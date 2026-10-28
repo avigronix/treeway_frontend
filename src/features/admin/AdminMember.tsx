@@ -24,7 +24,7 @@ import { cx } from '@/lib/cx';
 import { useAdminRefresh, useMember } from './adminData';
 import { MemberStatusChip } from './AdminMembers';
 import { AdminTitle, Kpi, Kpis, Panel, Table, td } from './AdminParts';
-import { EditContactButton, ResetPasswordButton } from './AdminMemberEdit';
+import { EditContactButton, ResetPasswordButton, SetPasswordButton } from './AdminMemberEdit';
 import { ComplaintsTab, IncomeTab, ReverseButton } from './AdminMemberTabs';
 import { Super3Tab } from './AdminMemberSuper3';
 import { canReverse, COMPANY_ID, typeText } from './adminText';
@@ -456,6 +456,7 @@ export default function AdminMember() {
                 <MemberStatusChip
                   m={{ status: m.status, days_inactive: null, is_company: m.user_code === COMPANY_ID }}
                 />
+                {m.must_change_password && <Chip tone="wait">New password pending</Chip>}
                 {m.user_code}
                 {d.data.summary.rank?.rank_name ? ` · ${d.data.summary.rank.rank_name}` : ''} · member since{' '}
                 {formatFullDate(m.created_at)}
@@ -468,6 +469,7 @@ export default function AdminMember() {
                   <>
                     <EditContactButton d={d.data} />
                     <ResetPasswordButton d={d.data} />
+                    <SetPasswordButton d={d.data} />
                     <BlockButton d={d.data} />
                   </>
                 </>

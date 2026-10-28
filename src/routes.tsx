@@ -97,6 +97,8 @@ export const routes: RouteObject[] = [
         ],
       },
       { path: '/blocked', lazy: page(() => import('@/features/auth/Blocked')) },
+      // Support set the password: choose your own first (Vinay 28 Oct).
+      { path: '/new-password', lazy: page(() => import('@/features/auth/NewPassword')) },
       { path: '/reset-password', lazy: page(() => import('@/features/auth/ResetByLink')) },
       { path: '/contact', lazy: page(() => import('@/features/content/ContactUs')) },
 

@@ -86,6 +86,11 @@ export const adminApi = {
     api<Schema<'ResetLinkSent'>>(`/admin/members/${encodeURIComponent(code)}/password-reset`, {
       json: { remark },
     }),
+  /** Any admin, no OTP (Vinay 28 Oct): the member must choose their own password at the next login. */
+  setMemberPassword: (code: string, new_password: string, remark: string) =>
+    api<unknown>(`/admin/members/${encodeURIComponent(code)}/set-password`, {
+      json: { new_password, remark },
+    }),
 
   /** All settings (money in PAISE here), what is locked and why, and who changed each one last. */
   settings: (signal?: AbortSignal) => api<AdminSettings>('/admin/settings', { signal }),

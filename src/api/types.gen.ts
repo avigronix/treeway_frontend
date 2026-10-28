@@ -1254,6 +1254,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/members/{userCode}/set-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Admin Member Set Password
+         * @description Any admin sets a member's password, no OTP (Vinay, 28 Oct), for a member who cannot use the email link.
+         *     The admin tells the member by phone. Safeguards: a reason (audited with the admin's name; the password is never
+         *     stored, logged or mailed), the member is logged out everywhere and must choose a new password at the next
+         *     login (nothing else works until then), the member gets a notice mail, and an admin can do 20 an hour.
+         */
+        post: operations["admin_member_set_password_api_v1_admin_members__userCode__set_password_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/single-leg/runs": {
         parameters: {
             query?: never;
@@ -3199,6 +3222,12 @@ export interface components {
             sponsor_code: string | null;
             /** Sponsor Name */
             sponsor_name: string | null;
+            /**
+             * Must Change Password
+             * @description An admin set the password; the member has not chosen a new one yet
+             * @default false
+             */
+            must_change_password: boolean;
         };
         /** AdminMembersCount */
         AdminMembersCount: {
@@ -3593,6 +3622,16 @@ export interface components {
         AdminRemarkModel: {
             /** Remark */
             remark: string;
+        };
+        /**
+         * AdminSetPasswordModel
+         * @description The admin types the new password (same rules as the member's own); the member must change it at login.
+         */
+        AdminSetPasswordModel: {
+            /** Remark */
+            remark: string;
+            /** New Password */
+            new_password: string;
         };
         /** AdminSettings */
         AdminSettings: {
@@ -5926,6 +5965,12 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /**
+             * Must Change Password
+             * @description An admin set the password: choose a new one first
+             * @default false
+             */
+            must_change_password: boolean;
             /** Sponsor Code */
             sponsor_code: string | null;
             /** Sponsor Name */
@@ -7431,6 +7476,12 @@ export interface components {
              * Format: date-time
              */
             created_at: string;
+            /**
+             * Must Change Password
+             * @description An admin set the password: choose a new one first
+             * @default false
+             */
+            must_change_password: boolean;
         };
         /** PublicVideo */
         PublicVideo: {
@@ -10613,6 +10664,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_ResetLinkSent_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_member_set_password_api_v1_admin_members__userCode__set_password_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminSetPasswordModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
                 };
             };
             /** @description Validation Error */

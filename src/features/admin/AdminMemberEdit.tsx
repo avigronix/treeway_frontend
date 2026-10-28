@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { adminApi, type AdminMemberDetail } from '@/api/admin';
-import { Button, ErrorBox, Note, OtpInput, Sheet, TextAreaField, TextField } from '@/components/ui';
+import {
+  Button,
+  ErrorBox,
+  Note,
+  OtpInput,
+  PasswordField,
+  Sheet,
+  TextAreaField,
+  TextField,
+} from '@/components/ui';
 import { mmss, useCountdown } from '@/lib/useCountdown';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import * as v from '@/lib/validators';
@@ -216,6 +225,118 @@ export function ResetPasswordButton({ d }: { d: AdminMemberDetail }) {
         <Button busy={busy} onClick={go}>
           Send the link
         </Button>
+      </Sheet>
+    </>
+  );
+}
+
+/** Any admin sets the member's password, no OTP (Vinay 28 Oct): for a member who cannot use the email link. The
+ * admin tells the member by phone; the member must choose their own at the next login. The reason is saved with
+ * the admin's name; the password is never saved in the log. */
+export function SetPasswordButton({ d }: { d: AdminMemberDetail }) {
+  const m = d.member;
+  const refresh = useAdminRefresh();
+  const [open, setOpen] = useState(false);
+  const [pw, setPw] = useState('');
+  const [pw2, setPw2] = useState('');
+  const [remark, setRemark] = useState('');
+  const [errs, setErrs] = useState<Record<string, string | null | undefined>>({});
+  const [confirm, setConfirm] = useState(false);
+  const [error, setError] = useState<unknown>(null);
+  const [done, setDone] = useState<string | null>(null);
+
+  const check = () => {
+    const p = v.password.safeParse(pw);
+    const e = {
+      pw: p.success ? undefined : p.error.issues[0]?.message,
+      pw2: pw === pw2 ? undefined : 'Passwords do not match.',
+      remark: remarkError(remark),
+    };
+    setErrs(e);
+    return !Object.values(e).some(Boolean);
+  };
+  const close = () => {
+    setOpen(false);
+    setConfirm(false);
+    setPw('');
+    setPw2('');
+    setError(null);
+  };
+
+  const [go, busy] = useSingleFlight(async () => {
+    setError(null);
+    try {
+      await adminApi.setMemberPassword(m.user_code, pw, remark.trim());
+      setDone(
+        `New password set for ${m.user_code}. Tell ${m.full_name} by phone; they must choose their own at the next login.`,
+      );
+      setRemark('');
+      close();
+    } catch (e) {
+      setConfirm(false);
+      setError(e);
+    } finally {
+      await refresh();
+    }
+  });
+
+  return (
+    <>
+      <Button size="sm" variant="ghost" onClick={() => (setOpen(true), setDone(null))}>
+        Set new password
+      </Button>
+      {done && (
+        <Note role="status" tone="info" className="basis-full">
+          {done}
+        </Note>
+      )}
+      <Sheet open={open} onClose={close} title="Set a new password" locked={busy}>
+        {!confirm ? (
+          <>
+            <Note tone="warn">
+              No OTP is asked. Use this only when {m.full_name} called you and cannot use the email link. They
+              are logged out everywhere and must choose their own password at the next login.
+            </Note>
+            <PasswordField
+              label="New password"
+              autoComplete="new-password"
+              help="At least 8 characters, with letters and numbers"
+              value={pw}
+              onChange={(e) => setPw(e.target.value)}
+              error={errs.pw}
+            />
+            <PasswordField
+              label="Type it again"
+              autoComplete="new-password"
+              value={pw2}
+              onChange={(e) => setPw2(e.target.value)}
+              error={errs.pw2}
+            />
+            <TextAreaField
+              label="Reason (saved with your name)"
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+              error={errs.remark}
+            />
+            {error ? <ErrorBox error={error} /> : null}
+            <Button onClick={() => check() && setConfirm(true)}>Next</Button>
+          </>
+        ) : (
+          <>
+            <Note tone="warn">
+              Set this password for {m.full_name} ({m.user_code})? Reason: "{remark.trim()}". Tell them the
+              password by phone only.
+            </Note>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Button variant="ghost" disabled={busy} onClick={() => setConfirm(false)}>
+                Back
+              </Button>
+              <Button variant="danger" busy={busy} onClick={go}>
+                Set password
+              </Button>
+            </div>
+          </>
+        )}
       </Sheet>
     </>
   );

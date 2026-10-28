@@ -44,6 +44,8 @@ export function RequireArea({ area }: { area: Area }) {
       </Shell>
     );
   }
+  // Treeway support set the password: nothing else opens until the member chooses their own (Vinay 28 Oct).
+  if (me.data.must_change_password) return <Navigate to="/new-password" replace />;
   const access = accessOf(me.data);
   if (!canOpen(access, area)) return <Navigate to={homeOf(access)} replace />;
   return <Outlet />;
