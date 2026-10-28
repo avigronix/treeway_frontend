@@ -33,8 +33,14 @@ export const MONEY_KEYS = [
   ['admin'],
 ] as const;
 
+// How long a money button waits for the fresh lists. On a slow network one refetch can take a minute (20 s
+// timeout, tried 3 times); the button must stop spinning anyway, the lists keep updating behind it.
+export const REFRESH_WAIT_MS = 3_000;
+
 export function refreshMoney(qc: QueryClient): Promise<void> {
-  return Promise.all(MONEY_KEYS.map((queryKey) => qc.invalidateQueries({ queryKey: [...queryKey] }))).then(
-    () => undefined,
-  );
+  const fresh = Promise.all(MONEY_KEYS.map((queryKey) => qc.invalidateQueries({ queryKey: [...queryKey] })));
+  return Promise.race([
+    fresh.then(() => undefined),
+    new Promise<void>((done) => setTimeout(done, REFRESH_WAIT_MS)),
+  ]);
 }

@@ -58,8 +58,10 @@ export function PaymentDetail({ r, onDone }: { r: AdminPaymentRequest; onDone: (
   const config = useConfig().data;
   const [remark, setRemark] = useState('');
   const [error, setError] = useState<unknown>(null);
+  const [acting, setActing] = useState<'approve' | 'reject'>('approve');
 
   const [review, busy] = useSingleFlight(async (action: 'approve' | 'reject') => {
+    setActing(action);
     setError(null);
     if (action === 'reject' && remark.trim().length < 3) {
       setError(
@@ -80,7 +82,15 @@ export function PaymentDetail({ r, onDone }: { r: AdminPaymentRequest; onDone: (
     } catch (e) {
       // A lost answer may still have worked: refresh first, never send it again by itself.
       await refresh();
-      setError(e);
+      setError(
+        e instanceof ApiError && e.status === 0
+          ? new ApiError(
+              0,
+              e.error,
+              'No answer from the server. It may already be done: wait for the list to update before you tap again.',
+            )
+          : e,
+      );
     }
   });
 
@@ -145,10 +155,16 @@ export function PaymentDetail({ r, onDone }: { r: AdminPaymentRequest; onDone: (
             </div>
             {error ? <ErrorBox error={error} /> : null}
             <div className="grid grid-cols-2 gap-2.5">
-              <Button busy={busy} onClick={() => review('approve')}>
+              {/* Only the tapped button spins; both stay locked until the server answers. */}
+              <Button busy={busy && acting === 'approve'} disabled={busy} onClick={() => review('approve')}>
                 Approve
               </Button>
-              <Button variant="danger" busy={busy} onClick={() => review('reject')}>
+              <Button
+                variant="danger"
+                busy={busy && acting === 'reject'}
+                disabled={busy}
+                onClick={() => review('reject')}
+              >
                 Reject
               </Button>
             </div>
