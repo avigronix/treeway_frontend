@@ -15,7 +15,7 @@ export function AuthPage({ children }: { children: ReactNode }) {
         >
           <div className="flex justify-center rounded-2xl bg-white p-3">
             <img
-              src="/icons/logo-480.webp"
+              src="/icons/logo.png"
               alt=""
               width={200}
               height={96}

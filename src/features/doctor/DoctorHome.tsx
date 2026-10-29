@@ -117,11 +117,11 @@ export default function DoctorHome() {
         ) : (
           <header className="flex min-h-[62px] items-center gap-2 border-b border-line bg-white px-3 py-2">
             <img
-              src="/icons/logo-header.webp"
+              src="/icons/logo-header.png"
               alt="Treeway"
-              width={60}
+              width={73}
               height={40}
-              className="h-10 w-[60px] object-contain"
+              className="h-10 w-[73px] object-contain"
             />
             <div className="flex min-w-0 flex-1 flex-col">
               <h1 className="m-0 truncate text-lg leading-[1.25] font-bold">Doctor requests</h1>

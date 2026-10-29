@@ -90,11 +90,11 @@ export default function Login() {
     <AuthPage>
       <div className="flex flex-col items-center gap-2 border-b border-line bg-bg px-6 pt-9 pb-7">
         <img
-          src="/icons/logo-480.webp"
+          src="/icons/logo.png"
           alt="Treeway - The Power of Nature"
-          width={240}
-          height={160}
-          className="h-40 w-60 object-contain"
+          width={260}
+          height={142}
+          className="h-[142px] w-[260px] object-contain"
         />
       </div>
 

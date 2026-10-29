@@ -17,11 +17,11 @@ export default function Blocked() {
     <AuthPage>
       <main className="flex flex-1 flex-col justify-center gap-3.5 px-[22px] py-6">
         <img
-          src="/icons/logo-header.webp"
+          src="/icons/logo-header.png"
           alt="Treeway"
-          width={120}
+          width={146}
           height={80}
-          className="h-20 w-[120px] object-contain"
+          className="h-20 w-[146px] object-contain"
         />
         <h1 className="m-0 text-[22px] font-bold">Your ID is blocked</h1>
         <Note tone="bad" role="alert">

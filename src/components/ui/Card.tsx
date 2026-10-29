@@ -27,7 +27,11 @@ export function Hero({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       {...rest}
-      className={cx('flex flex-col gap-1.5 rounded-[18px] bg-g p-[18px] text-white', className)}
+      className={cx(
+        // Green + gold from the logo (Vinay 29 Oct: a bit more colour). White text stays >= 7:1 on both greens.
+        'flex flex-col gap-1.5 rounded-[18px] border-b-[3px] border-gold bg-linear-135 from-g to-gt p-[18px] text-white',
+        className,
+      )}
     />
   );
 }

@@ -13,11 +13,11 @@ import { MemberPage } from './MemberPage';
 
 const icon = (d: string) => (
   <svg
-    width="24"
-    height="24"
+    width="22"
+    height="22"
     viewBox="0 0 24 24"
     fill="none"
-    stroke="#1E5E2A"
+    stroke="currentColor"
     strokeWidth="1.8"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -26,15 +26,22 @@ const icon = (d: string) => (
     <path d={d} />
   </svg>
 );
-const QUICK = [
+// Each shortcut has its own soft green or gold circle (Vinay 29 Oct: more colour, the logo's colours).
+const TONE = {
+  green: 'bg-okbg text-g',
+  gold: 'bg-goldbg text-goldt',
+} as const;
+const QUICK: { to: string; label: string; d: string; tone: keyof typeof TONE }[] = [
   {
+    tone: 'green',
     to: '/team',
     label: 'My team',
     d: 'M9 11.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6',
   },
-  { to: '/income?tab=levels', label: 'Levels', d: 'M4 20v-6M10 20V10M16 20V4M22 20H2' },
-  { to: '/shop', label: 'Shop', d: 'M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0' },
+  { tone: 'gold', to: '/income?tab=levels', label: 'Levels', d: 'M4 20v-6M10 20V10M16 20V4M22 20H2' },
+  { tone: 'green', to: '/shop', label: 'Shop', d: 'M6 7h12l-1 13H7L6 7zM9 7a3 3 0 0 1 6 0' },
   {
+    tone: 'gold',
     to: '/ask-doctor',
     label: 'Doctor',
     d: 'M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z',
@@ -195,9 +202,11 @@ export default function Home() {
             <Link
               key={q.to}
               to={q.to}
-              className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-card px-1 py-2.5 text-ink no-underline"
+              className="flex flex-col items-center gap-1.5 rounded-2xl border border-line bg-card px-1 py-2.5 text-ink no-underline"
             >
-              {icon(q.d)}
+              <span className={`grid size-10 place-items-center rounded-full ${TONE[q.tone]}`}>
+                {icon(q.d)}
+              </span>
               <span className="text-xs font-semibold">{q.label}</span>
             </Link>
           ))}
@@ -205,9 +214,9 @@ export default function Home() {
         <div className="grid grid-cols-2 gap-2.5">
           <Link
             to="/shop"
-            className="flex flex-col gap-0.5 rounded-2xl border border-line bg-card p-3 text-ink no-underline"
+            className="flex flex-col gap-0.5 rounded-2xl border border-goldbg bg-linear-135 from-card to-goldbg p-3 text-ink no-underline"
           >
-            <span className="text-xs text-mut">Product Wallet</span>
+            <span className="text-xs text-goldink">Product Wallet</span>
             <b className="text-lg">
               <WalletAmount value={sum?.product} />
             </b>
@@ -229,7 +238,7 @@ export default function Home() {
       {/* ---------------- computer (HomeDesktop) ---------------- */}
       <div className="hidden flex-col gap-[18px] desk:flex">
         <div className="grid grid-cols-[repeat(auto-fit,minmax(190px,1fr))] gap-3.5">
-          <div className="flex flex-col gap-1 rounded-[14px] border border-g bg-g p-4 text-white">
+          <div className="flex flex-col gap-1 rounded-[14px] border-b-[3px] border-gold bg-linear-135 from-g to-gt p-4 text-white">
             <span className="text-[13.5px] text-[#D6E8D0]">Income Wallet</span>
             <b className="text-[26px] leading-[1.2]">
               <WalletAmount value={sum?.income} />
@@ -241,16 +250,19 @@ export default function Home() {
             )}
           </div>
           <Kpi
+            tone="gold"
             label="Product Wallet"
             value={sum && <Money value={sum.product} />}
             small="For shopping only"
           />
           <Kpi
+            tone="green"
             label="Income this month"
             value={dash && <Money value={dash.income_this_month} />}
             small="After the 10% cut"
           />
           <Kpi
+            tone="gold"
             label="My team"
             value={team && formatCount(team.team)}
             small={
@@ -274,9 +286,21 @@ export default function Home() {
   );
 }
 
-function Kpi({ label, value, small }: { label: string; value: React.ReactNode; small: string }) {
+function Kpi({
+  label,
+  value,
+  small,
+  tone,
+}: {
+  label: string;
+  value: React.ReactNode;
+  small: string;
+  tone: 'green' | 'gold';
+}) {
   return (
-    <div className="flex min-w-0 flex-col gap-1 rounded-[14px] border border-line bg-white p-4">
+    <div
+      className={`flex min-w-0 flex-col gap-1 rounded-[14px] border border-t-[3px] border-line bg-white p-4 ${tone === 'gold' ? 'border-t-gold' : 'border-t-leaf'}`}
+    >
       <span className="text-[13.5px] text-mut">{label}</span>
       <b className="num text-[26px] leading-[1.2]">{value ?? <Skeleton className="h-8 w-24" />}</b>
       <small className="text-[12.5px] text-mut">{small}</small>

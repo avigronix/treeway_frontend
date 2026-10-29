@@ -54,7 +54,7 @@ export function Super3Card({ status, big = false }: { status: Super3Status | und
   return (
     <Link
       to="/super3"
-      className="flex flex-col gap-2 rounded-[20px] bg-gt px-4 py-3.5 text-white no-underline hover:text-white"
+      className="flex flex-col gap-2 rounded-[20px] border-l-4 border-sun bg-gt px-4 py-3.5 text-white no-underline hover:text-white"
     >
       <b className="text-[15px]">My Super 3 board</b>
       {main}
@@ -94,7 +94,7 @@ export function VideosCard({ className }: { className?: string }) {
     <Link
       to="/videos"
       className={cx(
-        'flex flex-col gap-0.5 rounded-2xl border border-line bg-card p-3 text-ink no-underline',
+        'flex flex-col gap-0.5 rounded-2xl border border-okbg bg-linear-135 from-card to-okbg p-3 text-ink no-underline',
         className,
       )}
     >

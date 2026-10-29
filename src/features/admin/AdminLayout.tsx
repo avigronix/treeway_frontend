@@ -134,7 +134,7 @@ function Menu({ onPick }: { onPick?: () => void }) {
     <nav aria-label="Admin menu" className="flex flex-col gap-0.5">
       <div className="mb-2.5 flex justify-center rounded-xl bg-white p-1.5">
         <img
-          src="/icons/logo-480.webp"
+          src="/icons/logo.png"
           alt="Treeway"
           width={150}
           height={72}

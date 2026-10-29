@@ -89,7 +89,7 @@ export default defineConfig({
           'icons/icon-*.png',
           'icons/maskable-*.png',
           'icons/apple-touch-icon.png',
-          'icons/logo-480.webp',
+          'icons/logo.png',
           // Members must not download admin / doctor code (see AREA_FOLDERS).
           ...AREA_FOLDERS.map((area) => `assets/${area}/**`),
         ],

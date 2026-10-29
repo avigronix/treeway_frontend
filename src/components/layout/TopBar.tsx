@@ -37,11 +37,11 @@ export function TopBar({
       )}
       {logo && (
         <img
-          src="/icons/logo-header.webp"
+          src="/icons/logo-header.png"
           alt="Treeway"
-          width={60}
+          width={73}
           height={40}
-          className="h-10 w-[60px] object-contain"
+          className="h-10 w-[73px] object-contain"
         />
       )}
       <div className="flex min-w-0 flex-1 flex-col">

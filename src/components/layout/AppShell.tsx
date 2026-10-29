@@ -116,12 +116,13 @@ function Sidebar({
         to={groups[0]?.items[0]?.to ?? '/'}
         aria-label="Treeway home"
         className={cx(
-          'mx-3 mt-3 mb-2 flex h-14 flex-none items-center justify-center rounded-xl bg-white',
-          !dark && 'border border-line',
+          // A white plate only on the dark sidebar (the logo's dark green tagline needs it); none on white.
+          'mx-3 mt-3 mb-2 flex h-14 flex-none items-center justify-center rounded-xl',
+          dark && 'bg-white',
         )}
       >
         <img
-          src={collapsed ? '/icons/icon-192.png' : '/icons/logo-480.webp'}
+          src={collapsed ? '/icons/icon-192.png' : '/icons/logo.png'}
           alt=""
           width={collapsed ? 36 : 112}
           height={collapsed ? 36 : 52}
