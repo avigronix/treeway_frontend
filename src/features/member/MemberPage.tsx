@@ -9,6 +9,7 @@ import { Icon } from '@/components/layout/icons';
 import { TopBar } from '@/components/layout/TopBar';
 import { cx } from '@/lib/cx';
 import { useIsTablet } from '@/lib/useMediaQuery';
+import { rankLabel } from './rankText';
 
 // Frame of every member page (an inactive ID looks at the same pages, Vinay 20 Oct).
 // Phone (< 768 px): the page's top bar + content + bottom menu (design Nav), as before.
@@ -84,9 +85,13 @@ export function MemberPage({
   children: ReactNode;
 }) {
   const me = useMe().data;
-  // The rank only if the dashboard is already loaded (no extra request on every page).
-  const rank = useQuery({ queryKey: ['dashboard'], queryFn: () => memberApi.dashboard(), enabled: false })
-    .data?.rank_name;
+  // The rank only if the dashboard is already loaded (no extra request on every page). Not loaded: the ID only,
+  // so a Distributor never sees "User" for a moment.
+  const dash = useQuery({
+    queryKey: ['dashboard'],
+    queryFn: () => memberApi.dashboard(),
+    enabled: false,
+  }).data;
   const qc = useQueryClient();
   const navigate = useNavigate();
   const heading = desktopTitle ?? title;
@@ -99,7 +104,7 @@ export function MemberPage({
       crumbs={pathname === '/' ? [{ label: heading }] : [{ label: 'Home', to: '/' }, { label: heading }]}
       user={{
         name: me?.full_name ?? '',
-        role: me ? `${me.user_code} · ${rank ?? 'Member'}` : '',
+        role: me ? (dash ? `${me.user_code} · ${rankLabel(dash.rank_name)}` : me.user_code) : '',
         profileTo: '/profile',
         onLogout: () => {
           endSession(qc);

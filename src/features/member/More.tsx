@@ -9,6 +9,7 @@ import { formatCount } from '@/lib/money';
 import { useCompany } from '@/features/auth/usePublic';
 import { useComplaintsMatrix, useDashboard, useVideosToday, useWalletSummary } from './data';
 import { MemberPage } from './MemberPage';
+import { rankLabel } from './rankText';
 
 // "More" menu: earnings, benefits and help, install, coming soon, WhatsApp group, log out.
 // Every option has the same icon as in the laptop sidebar (one line style); "Coming soon" rows have none, they
@@ -76,7 +77,7 @@ export default function More() {
   const videos = useVideosToday().data;
   const complaints = useComplaintsMatrix().data;
   const company = useCompany().data;
-  const rankName = useDashboard().data?.rank_name;
+  const dash = useDashboard().data;
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -85,7 +86,7 @@ export default function More() {
   return (
     <MemberPage
       title={me ? me.full_name : <Skeleton className="h-5 w-32" />}
-      subtitle={me ? `${me.user_code}${rankName ? ` · ${rankName}` : ''}` : undefined}
+      subtitle={me ? `${me.user_code}${dash ? ` · ${rankLabel(dash.rank_name)}` : ''}` : undefined}
       right={
         <ButtonLink to="/profile" variant="ghost" size="sm">
           Profile

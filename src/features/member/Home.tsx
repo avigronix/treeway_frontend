@@ -10,6 +10,7 @@ import { BannerStrip } from '@/features/content/BannerStrip';
 import { describeRow, INCOME_LABEL } from './ledger';
 import { IdStatusCard } from './InactiveParts';
 import { MemberPage } from './MemberPage';
+import { rankLabel } from './rankText';
 
 const icon = (d: string) => (
   <svg
@@ -130,7 +131,7 @@ export default function Home() {
         me ? (
           <span className={me.status === 'active' ? 'font-bold text-ok' : 'font-bold text-goldt'}>
             {me.user_code} · {me.status === 'active' ? 'Active' : 'Not active'}
-            {dash?.rank_name ? ` · ${dash.rank_name}` : ''}
+            {dash ? ` · ${rankLabel(dash.rank_name)}` : ''}
           </span>
         ) : undefined
       }
@@ -155,7 +156,7 @@ export default function Home() {
       desktopSubtitle={
         me
           ? // The sponsor is in Profile → ID details, not in the header (Vinay 20 Oct).
-            `${me.user_code} · ${me.status === 'active' ? 'Active' : 'Not active'}${dash?.rank_name ? ` · ${dash.rank_name}` : ''}`
+            `${me.user_code} · ${me.status === 'active' ? 'Active' : 'Not active'}${dash ? ` · ${rankLabel(dash.rank_name)}` : ''}`
           : ''
       }
       desktopActions={

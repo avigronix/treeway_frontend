@@ -5,7 +5,7 @@ import { formatDay, formatWhen, ordinal } from '@/lib/dates';
 import { formatCount } from '@/lib/money';
 import { monthName } from './ledger';
 import { MemberPage } from './MemberPage';
-import { directsLines } from './rankText';
+import { directsLines, rankLabel } from './rankText';
 
 // B5 "Rank and Royalty" from GET /rank/me (numbers from last night's count, `as_of`).
 
@@ -27,7 +27,7 @@ export default function Rank() {
         <>
           <div className="flex flex-col gap-2 rounded-[18px] bg-g p-4 text-white">
             <span className="text-[13.5px] text-[#D6E8D0]">My rank</span>
-            <b className="text-[26px]">{d.rank_name ?? 'No rank yet'}</b>
+            <b className="text-[26px]">{rankLabel(d.rank_name)}</b>
             <span className="text-[13px] text-[#E4EFE0]">
               {d.last_royalty ? (
                 <>
