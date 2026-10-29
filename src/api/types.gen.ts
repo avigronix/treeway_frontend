@@ -1268,7 +1268,7 @@ export interface paths {
          * @description Any admin sets a member's password, no OTP (Vinay, 28 Oct), for a member who cannot use the email link.
          *     The admin tells the member by phone. Safeguards: a reason (audited with the admin's name; the password is never
          *     stored, logged or mailed), the member is logged out everywhere and must choose a new password at the next
-         *     login (nothing else works until then), the member gets a notice mail, and an admin can do 20 an hour.
+         *     login (nothing else works until then), and an admin can do 20 an hour. The member gets no mail or notice.
          */
         post: operations["admin_member_set_password_api_v1_admin_members__userCode__set_password_post"];
         delete?: never;
@@ -7435,6 +7435,8 @@ export interface components {
             max: number;
             /** Daily Max */
             daily_max: number;
+            /** Max Level */
+            max_level: number;
         };
         /** PublicShop */
         PublicShop: {

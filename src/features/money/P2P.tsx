@@ -6,7 +6,7 @@ import { pinsApi } from '@/api/pins';
 import { refreshMoney } from '@/api/queryClient';
 import { walletApi } from '@/api/wallet';
 import { useMe } from '@/auth/session';
-import { Button, Card, Chip, ErrorBox, Note, Sheet, SkeletonList, TextField } from '@/components/ui';
+import { Button, Card, Chip, ErrorBox, Note, Pills, Sheet, SkeletonList, TextField } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { useCountdown } from '@/lib/useCountdown';
 import { useDebounced } from '@/lib/useDebounced';
@@ -20,11 +20,12 @@ import { useP2PLimits } from './data';
 import { checkAmount, feePreview } from './moneyForm';
 import { OtpSheet } from './OtpSheet';
 
-// C6 "Send to a member (P2P)": Income -> Income, to your team or your own sponsor, with an email OTP.
+// C6 "Send to a member (P2P)": Income -> Income, to your team levels 1..5 or your own sponsor (Vinay 29 Oct),
+// with an email OTP. The level limit comes from /config/public (p2p.max_level); the server checks it again.
 // Fee, limits and "left today" come from the server; the preview is a hint and the server's answer is shown.
 
 /** Who the ID is, and whether P2P to them is allowed (the server checks again). */
-function useReceiver(code: string, myCode: string | undefined) {
+function useReceiver(code: string, myCode: string | undefined, maxLevel: number | undefined) {
   const c = useDebounced(code.trim().toUpperCase(), 350);
   const valid = CODE_RE.test(c);
   const q = useQuery({
@@ -40,39 +41,55 @@ function useReceiver(code: string, myCode: string | undefined) {
   if (q.isError) return { code: c, state: 'notfound' as const };
   const m = q.data!;
   if (m.status !== 'active') return { code: c, state: 'inactive' as const, m };
-  if (m.my_level === null && !m.is_my_sponsor) return { code: c, state: 'outside' as const, m };
+  if (m.is_my_sponsor) return { code: c, state: 'ok' as const, m };
+  if (m.my_level === null) return { code: c, state: 'outside' as const, m };
+  if (maxLevel !== undefined && m.my_level > maxLevel) return { code: c, state: 'deep' as const, m };
   return { code: c, state: 'ok' as const, m };
 }
 
+const PICK_LIMIT = 50;
+
 function TeamPicker({
   open,
+  maxLevel,
   onClose,
   onPick,
 }: {
   open: boolean;
+  maxLevel: number;
   onClose: () => void;
   onPick: (code: string) => void;
 }) {
+  const [level, setLevel] = useState('1');
   const t = useQuery({
-    queryKey: ['team', 'members', 'p2p-picker'],
-    queryFn: ({ signal }) => memberApi.teamMembers({ level: 1, page: 1 }, signal),
+    queryKey: ['team', 'members', 'p2p-picker', level],
+    queryFn: ({ signal }) =>
+      memberApi.teamMembers({ level: Number(level), status: 'active', page: 1, limit: PICK_LIMIT }, signal),
     enabled: open,
   });
+  const levels = Array.from({ length: maxLevel }, (_, i) => ({
+    value: String(i + 1),
+    label: `Level ${i + 1}`,
+  }));
   return (
     <Sheet open={open} onClose={onClose} title="Pick from my team">
+      <Pills items={levels} value={level} onChange={setLevel} label="Team level" className="mb-2" />
       {t.isError ? (
         <ErrorBox error={t.error} onRetry={() => t.refetch()} />
       ) : !t.data ? (
         <SkeletonList rows={3} />
-      ) : t.data.rows.filter((r) => r.status === 'active').length === 0 ? (
-        <span className="text-sm text-mut">
-          No active member in your level 1 yet. You can type any team ID above.
-        </span>
+      ) : t.data.rows.length === 0 ? (
+        <span className="text-sm text-mut">No active member in your level {level} yet.</span>
       ) : (
-        <ul className="m-0 flex list-none flex-col p-0">
-          {t.data.rows
-            .filter((r) => r.status === 'active')
-            .map((r) => (
+        <>
+          {t.data.total > t.data.rows.length && (
+            <span className="text-xs text-mut">
+              Showing the newest {t.data.rows.length} of {t.data.total}. Type the ID above to send to someone
+              else.
+            </span>
+          )}
+          <ul className="m-0 flex list-none flex-col p-0">
+            {t.data.rows.map((r) => (
               <li key={r.user_code}>
                 <button
                   type="button"
@@ -84,7 +101,8 @@ function TeamPicker({
                 </button>
               </li>
             ))}
-        </ul>
+          </ul>
+        </>
       )}
     </Sheet>
   );
@@ -94,6 +112,7 @@ export default function P2P() {
   const qc = useQueryClient();
   const me = useMe().data;
   const config = useConfig().data?.p2p;
+  const maxLevel = config?.max_level;
   const limits = useP2PLimits();
   const balance = useWalletSummary().data?.income;
   const [to, setTo] = useState('');
@@ -107,7 +126,7 @@ export default function P2P() {
   const [done, setDone] = useState<string | null>(null);
   const [wait, startWait] = useCountdown();
 
-  const r = useReceiver(to, me?.user_code);
+  const r = useReceiver(to, me?.user_code, maxLevel);
   const left = limits.data?.left_today;
   const max = config && left !== undefined ? Math.min(config.max, left) : config?.max;
   const check = checkAmount(text, { min: config?.min, max, balance });
@@ -184,6 +203,13 @@ export default function P2P() {
           {r.m.full_name} is not in your team. You can send only to your team or your sponsor.
         </span>
       ) : null,
+    deep:
+      r.state === 'deep' ? (
+        <span className="text-xs font-semibold text-b">
+          {r.m.full_name} is at level {r.m.my_level} of your team. You can send only up to level {maxLevel} or
+          to your sponsor.
+        </span>
+      ) : null,
     ok:
       r.state === 'ok' ? (
         <span className="flex flex-wrap items-center gap-1.5 text-xs">
@@ -198,7 +224,12 @@ export default function P2P() {
   }[r.state];
 
   return (
-    <MemberPage narrow title="Send to a member (P2P)" subtitle="To your team or your sponsor" back="/wallet">
+    <MemberPage
+      narrow
+      title="Send to a member (P2P)"
+      subtitle={`To your team (up to level ${maxLevel ?? 5}) or your sponsor`}
+      back="/wallet"
+    >
       {done && (
         <Note role="status" tone="info">
           {done}
@@ -259,7 +290,7 @@ export default function P2P() {
           Send with OTP
         </Button>
         <Note>
-          You cannot send to anyone outside your team.
+          You can send only to your team up to level {maxLevel ?? 5} or to your sponsor.
           {limits.data
             ? ` You can send up to ${formatMoney(limits.data.daily_max)} a day (${formatMoney(limits.data.left_today)} left today).`
             : ''}{' '}
@@ -272,6 +303,7 @@ export default function P2P() {
 
       <TeamPicker
         open={picker}
+        maxLevel={maxLevel ?? 5}
         onClose={() => setPicker(false)}
         onPick={(c) => {
           setTo(c);
