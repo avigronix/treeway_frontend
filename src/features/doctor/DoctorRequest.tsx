@@ -181,7 +181,8 @@ export function DoctorRequest({ id, onBack }: { id: number; onBack: () => void }
       {d.prescriptions.map((p) => (
         <Card key={p.id} className="gap-1 text-[13px]">
           <b>
-            Sent {formatWhen(p.created_at)} · Reg. no. {p.bams_reg_no}
+            Sent {formatWhen(p.created_at)}
+            {p.bams_reg_no ? ` · Reg. no. ${p.bams_reg_no}` : ''}
           </b>
           {p.medicines.map((m, i) => (
             <span key={i}>

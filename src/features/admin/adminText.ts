@@ -247,7 +247,7 @@ export function checkRate(pin: string, rate: string, useState: boolean) {
   };
 }
 
-/** Add doctor form (the same rules as the backend AdminCreateModel + BAMS no.). Pure, unit tested. */
+/** Add doctor form (the same rules as the backend AdminCreateModel + optional BAMS no.). Pure, unit tested. */
 export function checkDoctor(f: {
   full_name: string;
   mobile: string;
@@ -255,6 +255,7 @@ export function checkDoctor(f: {
   password: string;
   bams_reg_no: string;
 }) {
+  const reg = f.bams_reg_no.trim().length;
   return {
     full_name: f.full_name.trim().length >= 2 ? undefined : 'Enter the full name.',
     mobile: /^[6-9]\d{9}$/.test(f.mobile) ? undefined : 'Enter a valid 10 digit mobile number.',
@@ -266,7 +267,8 @@ export function checkDoctor(f: {
       /\d/.test(f.password)
         ? undefined
         : 'Use at least 8 characters with letters and numbers.',
-    bams_reg_no: f.bams_reg_no.trim().length >= 3 ? undefined : 'Enter the BAMS registration number.',
+    // Optional (Vinay 29 Oct); when given, 3 to 40 letters like the backend.
+    bams_reg_no: reg === 0 || (reg >= 3 && reg <= 40) ? undefined : 'Use 3 to 40 letters, or leave it empty.',
   };
 }
 

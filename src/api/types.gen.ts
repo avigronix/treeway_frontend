@@ -2879,7 +2879,7 @@ export interface components {
             /** Status */
             status: string;
             /** Bams Reg No */
-            bams_reg_no: string;
+            bams_reg_no: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4430,9 +4430,9 @@ export interface components {
             password: string;
             /**
              * Bams Reg No
-             * @description Shown on every prescription
+             * @description Optional (Vinay 29 Oct); shown on prescriptions when given
              */
-            bams_reg_no: string;
+            bams_reg_no?: string | null;
         };
         /** DoctorInboxCounts */
         DoctorInboxCounts: {
@@ -7333,7 +7333,7 @@ export interface components {
             /** Doctor Name */
             doctor_name: string;
             /** Bams Reg No */
-            bams_reg_no: string;
+            bams_reg_no: string | null;
             /** Advice */
             advice: string;
             /**

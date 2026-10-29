@@ -76,7 +76,7 @@ function AddDoctor({ onDone }: { onDone: (m: string) => void }) {
         ...f,
         full_name: f.full_name.trim(),
         email: f.email.trim().toLowerCase(),
-        bams_reg_no: f.bams_reg_no.trim(),
+        bams_reg_no: f.bams_reg_no.trim() || null,
       });
       setOpen(false);
       setF({ full_name: '', mobile: '', email: '', password: '', bams_reg_no: '' });
@@ -100,7 +100,7 @@ function AddDoctor({ onDone }: { onDone: (m: string) => void }) {
           error={errs.full_name}
         />
         <TextField
-          label="BAMS registration no."
+          label="BAMS registration no. (optional)"
           value={f.bams_reg_no}
           onChange={(e) => set('bams_reg_no')(e.target.value)}
           error={errs.bams_reg_no}
@@ -255,7 +255,8 @@ function RequestSheet({ r, doctors, onClose }: { r: Req; doctors: Doc[]; onClose
       {r.prescriptions.map((p) => (
         <div key={p.id} className="flex flex-col gap-0.5 rounded-xl bg-tint p-2.5 text-[13px]">
           <b>
-            {p.doctor_name} · Reg. no. {p.bams_reg_no} · {formatWhen(p.created_at)}
+            {p.doctor_name}
+            {p.bams_reg_no ? ` · Reg. no. ${p.bams_reg_no}` : ''} · {formatWhen(p.created_at)}
           </b>
           {p.medicines.map((m, i) => (
             <span key={i}>
@@ -403,7 +404,7 @@ export default function AdminDoctors() {
                     {d.user_code} · {d.mobile}
                   </small>
                 </td>
-                <td className={td}>{d.bams_reg_no}</td>
+                <td className={td}>{d.bams_reg_no ?? '–'}</td>
                 <td className={`${td} num`}>{formatCount(d.waiting)}</td>
                 <td className={`${td} num`}>{formatCount(d.answered_this_month)}</td>
                 <td className={td}>

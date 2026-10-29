@@ -82,7 +82,8 @@ function RequestCard({ r }: { r: MemberDoctorRequest }) {
       {r.prescriptions.map((p) => (
         <div key={p.id} className="flex flex-col gap-1.5 rounded-xl bg-tint p-3 text-[13px]">
           <b>
-            {p.doctor_name} (BAMS) · Reg. no. {p.bams_reg_no}
+            {p.doctor_name}
+            {p.bams_reg_no ? ` (BAMS) · Reg. no. ${p.bams_reg_no}` : ''}
           </b>
           {p.medicines.length > 0 && (
             <ul className="m-0 flex list-disc flex-col gap-0.5 pl-4">
