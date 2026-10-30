@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { qk } from '@/api/keys';
 import { videosApi, type TodayVideo } from '@/api/videos';
 import { MemberPage } from '@/features/member/MemberPage';
-import { Card, ErrorBox, Money, Note, Skeleton, SkeletonList } from '@/components/ui';
+import { Card, Chip, ErrorBox, Money, Note, Skeleton, SkeletonList } from '@/components/ui';
 import { formatDay, formatTime } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { cx } from '@/lib/cx';
@@ -137,9 +137,17 @@ export default function Videos() {
         <div className="flex items-center justify-between gap-2.5">
           <h2 className="m-0 text-[14.5px] font-bold">Last 14 days</h2>
           {history.data && (
-            <span className="text-xs text-mut">
-              {history.data.done} done · {history.data.missed} missed
-            </span>
+            // Bold, coloured like the day boxes below (Vinay 30 Oct: both counts clear at a glance).
+            <div className="flex gap-1.5">
+              <Chip tone="ok" className="text-[13px]">
+                <i aria-hidden="true" className="size-2 rounded-full bg-leaf" />
+                {history.data.done} Done
+              </Chip>
+              <Chip tone="bad" className="text-[13px]">
+                <i aria-hidden="true" className="size-2 rounded-full bg-[#F28B82]" />
+                {history.data.missed} Missed
+              </Chip>
+            </div>
           )}
         </div>
         {history.isError ? (
