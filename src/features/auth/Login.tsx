@@ -88,7 +88,10 @@ export default function Login() {
 
   return (
     <AuthPage>
-      <div className="flex flex-col items-center gap-2 border-b border-line bg-bg px-6 pt-9 pb-7">
+      <div className="flex flex-col items-center gap-2 border-b border-line bg-bg px-6 pt-4 pb-7">
+        <Link to="/site" className="self-start text-[14px] font-bold no-underline hover:underline">
+          ← Back to Site
+        </Link>
         <img
           src="/icons/logo.png"
           alt="Treeway - The Power of Nature"

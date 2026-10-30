@@ -100,6 +100,10 @@ export const routes: RouteObject[] = [
       // Support set the password: choose your own first (Vinay 28 Oct).
       { path: '/new-password', lazy: page(() => import('@/features/auth/NewPassword')) },
       { path: '/reset-password', lazy: page(() => import('@/features/auth/ResetByLink')) },
+      // Public website (Vinay 29 Oct): no login needed; reached from "Back to Site" on the login page.
+      { path: '/site', lazy: page(() => import('@/features/site/Landing')) },
+      { path: '/about', lazy: page(() => import('@/features/site/About')) },
+      { path: '/privacy', lazy: page(() => import('@/features/site/Privacy')) },
       { path: '/contact', lazy: page(() => import('@/features/content/ContactUs')) },
 
       {

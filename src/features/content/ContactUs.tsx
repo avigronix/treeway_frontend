@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { contentApi } from '@/api/content';
 import { Button, ErrorBox, Note, TextAreaField, TextField } from '@/components/ui';
 import { useSingleFlight } from '@/lib/useSingleFlight';
-import { AuthPage } from '@/features/auth/AuthShell';
+import { SitePage } from '@/features/site/SitePage';
 import { checkContact } from './contactText';
 
 // Public "Contact us": a name, a mobile and a message; the team calls back. Members use Help instead.
@@ -35,10 +35,10 @@ export default function ContactUs() {
   });
 
   return (
-    <AuthPage>
+    <SitePage title="Contact us">
       <form
         noValidate
-        className="flex flex-1 flex-col gap-3.5 px-[22px] py-6"
+        className="mx-auto my-8 flex w-full max-w-[520px] flex-col gap-3.5 rounded-2xl border border-line bg-white px-[22px] py-6"
         onSubmit={(e) => {
           e.preventDefault();
           void send();
@@ -105,6 +105,6 @@ export default function ContactUs() {
           </>
         )}
       </form>
-    </AuthPage>
+    </SitePage>
   );
 }
