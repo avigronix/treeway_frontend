@@ -7,16 +7,16 @@ import './index.css';
 import './lib/install'; // keeps the browser's install prompt for the More page
 import { makeQueryClient } from '@/api/queryClient';
 import { router } from '@/routes';
-import { setUpdateReady } from '@/lib/swUpdate';
+import { setUpdateReady, takeOverAndReload } from '@/lib/swUpdate';
 
 const queryClient = makeQueryClient();
 
 if (import.meta.env.PROD) {
   // Static files only (see vite.config.ts). A new build shows the "new version" toast; Update reloads.
   void import('virtual:pwa-register').then(({ registerSW }) => {
-    const updateSW = registerSW({
+    registerSW({
       immediate: true,
-      onNeedRefresh: () => setUpdateReady(() => updateSW(true)),
+      onNeedRefresh: () => setUpdateReady(() => takeOverAndReload()),
     });
   });
 }

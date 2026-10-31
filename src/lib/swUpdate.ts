@@ -13,6 +13,30 @@ export function setUpdateReady(fn: () => Promise<void>) {
 
 export const applyUpdate = () => apply?.();
 
+/**
+ * Update button: the new service worker takes over, then the page reloads, always.
+ * The library alone reloads only when an old worker controls this page; after a hard reload (or with
+ * another tab open) nothing happened and the toast stayed (Vinay 31 Oct). So we wait for the new worker
+ * ourselves (at most `waitMs`) and reload in every case.
+ */
+export async function takeOverAndReload(waitMs = 4000): Promise<void> {
+  const reg = await navigator.serviceWorker?.getRegistration().catch(() => undefined);
+  const next = reg?.waiting;
+  if (next) {
+    await new Promise<void>((done) => {
+      const timer = setTimeout(done, waitMs);
+      next.addEventListener('statechange', () => {
+        if (next.state === 'activated' || next.state === 'redundant') {
+          clearTimeout(timer);
+          done();
+        }
+      });
+      next.postMessage({ type: 'SKIP_WAITING' });
+    });
+  }
+  window.location.reload();
+}
+
 export function useUpdateReady(): boolean {
   return useSyncExternalStore(
     (cb) => {
