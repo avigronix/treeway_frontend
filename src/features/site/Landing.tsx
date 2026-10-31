@@ -73,7 +73,7 @@ export default function Landing() {
           </Feature>
           <Feature icon={Icon.videos} title="Daily videos">
             {video
-              ? `Watch ${video.per_day} short videos a day for ${video.days} days and get ${formatMoney(video.reward)} a day in your Product Wallet.`
+              ? `Watch the day's short videos (up to ${video.per_day}) for ${video.days} days and get ${formatMoney(video.reward)} a day in your Product Wallet.`
               : 'Watch short videos every day and get a reward in your Product Wallet.'}
           </Feature>
           <Feature icon={Icon.team} title="Your own team">

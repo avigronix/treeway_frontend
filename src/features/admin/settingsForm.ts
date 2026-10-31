@@ -36,7 +36,7 @@ export const PLAN_GROUPS: GroupDef[] = [
     title: 'Daily videos',
     fields: [
       { path: ['reward'], label: 'Videos ₹ a day', kind: 'money' },
-      { path: ['per_day'], label: 'Videos a day', kind: 'int' },
+      { path: ['per_day'], label: 'Most videos a day (each day can have 1 up to this)', kind: 'int' },
       { path: ['seconds'], label: 'Seconds per video', kind: 'int' },
       { path: ['days'], label: 'Days from activation', kind: 'int' },
     ],

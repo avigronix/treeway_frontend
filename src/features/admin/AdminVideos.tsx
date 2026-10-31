@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminApi, adminKeys, type AdminVideos } from '@/api/admin';
 import { Button, Chip, ErrorBox, Note, SelectField, SkeletonList, TextField } from '@/components/ui';
 import { formatDay, formatTime, formatWhen, istDayKey, istDayKeyAfter } from '@/lib/dates';
+import { formatMoney } from '@/lib/money';
+import { useConfig } from '@/features/auth/usePublic';
 import { cx } from '@/lib/cx';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import {
@@ -14,21 +16,27 @@ import {
 } from './adminForms';
 import { Panel } from './AdminParts';
 
-// J3 "Daily videos": the links members must watch after login (4 a day, 30 s each, ₹20 when all are done).
-// The server checks the links again, refuses past days, and audits every change (old and new).
-// Start time (Vinay 22 Oct): each day's 4 go live at one India time (empty = 12:00 AM). Before it the app is
+// J3 "Daily videos": the links members must watch after login, 30 s each, ₹20 when all of the day's are done.
+// Vinay 31 Oct: 1 to 4 videos a day (the "most a day" setting), full add / edit / remove until the day goes live;
+// once live only a link or title can change (the count stays); past days open read only; a day without videos
+// has none (no lock, no ₹20). The server checks all of it again, refuses a save made from an old screen
+// (`version`) and audits every change (old and new).
+// Start time (Vinay 22 Oct): each day's videos go live at one India time (empty = 12:00 AM). Before it the app is
 // open; from it the lock comes. A live day's time can only move earlier, and a live day cannot be deleted.
 
 type DayStatus = AdminVideos['status'];
 const STATUS: Record<DayStatus, { tone: 'ok' | 'wait' | 'muted' | 'bad'; text: string }> = {
   live: { tone: 'ok', text: 'Live' },
   scheduled: { tone: 'wait', text: 'Scheduled' },
-  incomplete: { tone: 'bad', text: 'Links missing' },
+  empty: { tone: 'bad', text: 'No videos' },
   ended: { tone: 'muted', text: 'Ended' },
 };
 /** "09:30:00" from the server -> "9:30 AM"; none = 12:00 AM. */
 const timeText = (t: string | null | undefined) =>
   formatTime(`2026-01-01T${(t ?? '00:00').slice(0, 5)}:00+05:30`);
+const dayText = (d: string) => formatDay(d + 'T12:00:00+05:30');
+const EMPTY: Row = { platform: '', url: '', title: '' };
+const plural = (n: number) => `${n} video${n === 1 ? '' : 's'}`;
 
 function DayForm({
   data,
@@ -40,13 +48,18 @@ function DayForm({
   onSaved: (msg: string | null) => void;
 }) {
   const qc = useQueryClient();
-  const bySlot = new Map(data.videos.map((v) => [v.slot, v]));
-  const saved = new Set(data.videos.map((v) => v.slot));
+  const reward = useConfig().data?.video.reward;
+  const seconds = useConfig().data?.video.seconds;
+  const ended = data.status === 'ended';
+  const live = data.status === 'live';
+  const canChangeCount = !ended && !live; // add / remove / delete the day
+  const most = data.per_day;
   const [rows, setRows] = useState<Row[]>(() =>
-    Array.from({ length: data.per_day }, (_, i) => {
-      const v = bySlot.get(i + 1);
-      return { platform: (v?.platform as Platform) ?? '', url: v?.url ?? '', title: v?.title ?? '' };
-    }),
+    data.videos.length
+      ? data.videos.map((v) => ({ platform: v.platform as Platform, url: v.url, title: v.title }))
+      : canChangeCount
+        ? [EMPTY]
+        : [],
   );
   const [errs, setErrs] = useState<RowErr[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -54,8 +67,6 @@ function DayForm({
   const [startTime, setStartTime] = useState(savedTime);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const today = istDayKey();
-  const missing = rows.filter((r) => !r.url.trim()).length;
-  const live = data.status === 'live';
   const refresh = () =>
     Promise.all([
       qc.invalidateQueries({ queryKey: ['admin', 'videos'] }),
@@ -66,23 +77,42 @@ function DayForm({
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
     onSaved(null);
   };
+  const add = () => {
+    setRows((rs) => (rs.length < most ? [...rs, EMPTY] : rs));
+    onSaved(null);
+  };
+  const removeAt = (i: number) => {
+    setRows((rs) => rs.filter((_, j) => j !== i));
+    setErrs((es) => es.filter((_, j) => j !== i));
+    onSaved(null);
+  };
 
   const [save, saving] = useSingleFlight(async () => {
     setError(null);
     onSaved(null);
-    const { items, errs: e } = checkVideoRows(rows, saved);
+    const timeChanged = startTime !== savedTime;
+    // A new day with only an empty row and a start time: save the time alone.
+    const untouched =
+      data.videos.length === 0 && rows.every((r) => !r.platform && !r.url.trim() && !r.title.trim());
+    const { items, errs: e } = untouched ? { items: [], errs: [] } : checkVideoRows(rows);
     setErrs(e);
     if (e.some((x) => Object.keys(x).length)) return;
-    const timeChanged = startTime !== savedTime;
-    if (!items.length && !timeChanged) {
+    if (untouched && !timeChanged) {
       setError(new Error('Add at least one video.'));
       return;
     }
     try {
-      const r = await adminApi.saveVideos(day, items, timeChanged ? startTime || '00:00' : undefined);
-      const left = r.missing_days.find((m) => m.date === day)?.missing ?? 0;
+      await adminApi.saveVideos(day, {
+        videos: untouched ? undefined : items,
+        start_time: timeChanged ? startTime || '00:00' : undefined,
+        version: data.version,
+      });
       onSaved(
-        left ? `Saved. ${left} video${left === 1 ? '' : 's'} still missing for this day.` : 'Videos saved.',
+        untouched
+          ? 'Start time saved. No videos on this day yet.'
+          : items.length
+            ? `Saved: ${plural(items.length)}. Members get ${reward !== undefined ? formatMoney(reward) : 'the reward'} after ${items.length === 1 ? 'it' : `all ${items.length}`}.`
+            : 'Saved: no videos on this day. Members get no video reward that day.',
       );
     } catch (err) {
       setError(err);
@@ -95,7 +125,7 @@ function DayForm({
     setError(null);
     try {
       await adminApi.deleteVideos(day);
-      onSaved('Videos removed for this day.');
+      onSaved('Videos removed for this day. Members get no videos and no reward that day.');
     } catch (err) {
       setError(err);
     } finally {
@@ -103,7 +133,7 @@ function DayForm({
       await refresh();
     }
   });
-  const canDelete = !live && data.status !== 'ended' && (data.videos.length > 0 || data.start_time !== null);
+  const canDelete = canChangeCount && (data.videos.length > 0 || data.start_time !== null);
 
   return (
     <form
@@ -111,7 +141,7 @@ function DayForm({
       className="flex flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();
-        void save();
+        if (!ended) void save();
       }}
     >
       <div className="flex flex-wrap items-end gap-3">
@@ -119,6 +149,7 @@ function DayForm({
           label="Start time (India time)"
           type="time"
           value={startTime}
+          disabled={ended}
           onChange={(ev) => (setStartTime(ev.target.value), onSaved(null))}
           fieldClassName="w-[190px]"
           help={startTime ? undefined : 'Empty = 12:00 AM'}
@@ -126,29 +157,38 @@ function DayForm({
         <span className="flex items-center gap-2 pb-2.5 text-[13px]">
           <Chip tone={STATUS[data.status].tone}>{STATUS[data.status].text}</Chip>
           {data.status === 'scheduled' && `Goes live at ${timeText(data.start_time)}`}
-          {data.status === 'incomplete' && "Members get the last full day's videos"}
         </span>
       </div>
-      {live && <Note>Members are watching these now: the start time can only move earlier.</Note>}
-      {startTime >= '20:00' && (
-        <Note tone="warn">
-          Members get only until 11:59 PM to watch all 4 and earn ₹20. A day ends at midnight.
+      {ended && <Note>This day is over. It is shown for your records and cannot be changed.</Note>}
+      {live && (
+        <Note>
+          Members are watching these now: you can fix a link or a title, and move the start time earlier.
+          Adding or removing videos is not possible on a live day.
         </Note>
       )}
-      {day === today && (
+      {!ended && startTime >= '20:00' && (
+        <Note tone="warn">
+          Members get only until 11:59 PM to watch all of them and earn the reward. A day ends at midnight.
+        </Note>
+      )}
+      {day === today && !ended && (
         <Note tone="warn">
           These are today's videos. Members who already watched keep their progress. Change today only to fix
           a broken link.
         </Note>
       )}
       {rows.map((r, i) => {
-        const v = bySlot.get(i + 1);
+        const v = data.videos[i];
         const e = errs[i] ?? {};
         return (
-          <fieldset key={i} className="m-0 flex flex-col gap-2 rounded-xl border border-line p-3">
+          <fieldset
+            key={i}
+            disabled={ended}
+            className="m-0 flex min-w-0 flex-col gap-2 rounded-xl border border-line p-3"
+          >
             <legend className="px-1 text-[13px] font-bold">
               Video {i + 1}
-              {v ? (
+              {v && v.url === r.url && v.title === r.title && v.platform === r.platform ? (
                 <span className="font-normal text-mut">
                   {' '}
                   · saved by {v.updated_by_name ?? 'an admin'}, {formatWhen(v.updated_at)}
@@ -181,32 +221,56 @@ function DayForm({
                 error={e.title}
               />
             </div>
+            {canChangeCount && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="self-start"
+                disabled={saving || removing}
+                onClick={() => removeAt(i)}
+                aria-label={`Remove video ${i + 1}`}
+              >
+                Remove
+              </Button>
+            )}
           </fieldset>
         );
       })}
-      {missing > 0 && (
+      {canChangeCount && rows.length < most && (
+        <Button variant="dash" size="md" disabled={saving || removing} onClick={add}>
+          + Add video ({rows.length} of {most})
+        </Button>
+      )}
+      {!ended && rows.length === 0 && (
         <Note tone="warn">
-          {missing} video{missing === 1 ? '' : 's'} for {formatDay(day + 'T12:00:00+05:30')}{' '}
-          {missing === 1 ? 'is' : 'are'} missing. Add them before 12 midnight, or members cannot finish the
-          login videos (the app then uses the last full day's videos).
+          No videos on {dayText(day)}: members get no lock and no video reward that day.
+        </Note>
+      )}
+      {!ended && rows.length > 0 && (
+        <Note>
+          Members watch {rows.length === 1 ? 'this video' : `these ${rows.length} in order`} ({seconds ?? 30}{' '}
+          seconds each) and get {reward !== undefined ? formatMoney(reward) : 'the reward'} when{' '}
+          {rows.length === 1 ? 'it is' : 'all are'} done.
         </Note>
       )}
       {error ? <ErrorBox error={error} /> : null}
-      <div className="flex flex-wrap gap-2">
-        <Button type="submit" busy={saving} disabled={removing}>
-          Save videos
-        </Button>
-        {canDelete && !confirmDelete && (
-          <Button variant="ghost" disabled={saving} onClick={() => setConfirmDelete(true)}>
-            Delete this day
+      {!ended && (
+        <div className="flex flex-wrap gap-2">
+          <Button type="submit" busy={saving} disabled={removing}>
+            Save videos
           </Button>
-        )}
-      </div>
+          {canDelete && !confirmDelete && (
+            <Button variant="ghost" disabled={saving} onClick={() => setConfirmDelete(true)}>
+              Delete this day
+            </Button>
+          )}
+        </div>
+      )}
       {confirmDelete && (
         <div className="flex flex-col gap-2">
           <Note tone="warn">
-            Remove all videos and the start time of {formatDay(day + 'T12:00:00+05:30')}? Members then get the
-            last full day's videos that day.
+            Remove all videos and the start time of {dayText(day)}? Members then get no videos and no reward
+            that day.
           </Note>
           <div className="grid grid-cols-2 gap-2.5">
             <Button variant="ghost" disabled={removing} onClick={() => setConfirmDelete(false)}>
@@ -267,7 +331,7 @@ export function VideosPanel() {
       </div>
       {missingDays.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
-          <span className="text-mut">Missing videos:</span>
+          <span className="text-mut">No videos yet:</span>
           {missingDays.map((m) => (
             <button
               key={m.date}
@@ -276,12 +340,7 @@ export function VideosPanel() {
               className="cursor-pointer border-0 bg-transparent p-0"
             >
               <Chip tone="wait">
-                {m.date === today
-                  ? 'Today'
-                  : m.date === tomorrow
-                    ? 'Tomorrow'
-                    : formatDay(m.date + 'T12:00:00+05:30')}{' '}
-                · {m.missing}
+                {m.date === today ? 'Today' : m.date === tomorrow ? 'Tomorrow' : dayText(m.date)}
               </Chip>
             </button>
           ))}
@@ -295,7 +354,7 @@ export function VideosPanel() {
         // A fresh form only when the day or the SAVED videos change (after a save: who saved, and when). Coming
         // back from the YouTube tab with a copied link must never wipe what the admin typed.
         <DayForm
-          key={`${day}:${v.data.start_time}:${v.data.videos.map((x) => `${x.slot}@${x.updated_at}`).join(',')}`}
+          key={`${day}:${v.data.version}:${v.data.status}`}
           data={v.data}
           day={day}
           onSaved={setDone}
@@ -311,7 +370,7 @@ export function VideosPanel() {
   );
 }
 
-/** The last 3 days and the next 14: links set, start time, status. Tap a day to open it. */
+/** The last 3 days (read only) and the next 14: videos set, start time, status. Tap a day to open it. */
 function Schedule({ day, onPick }: { day: string; onPick: (d: string) => void }) {
   const today = istDayKey();
   const s = useQuery({
@@ -328,7 +387,6 @@ function Schedule({ day, onPick }: { day: string; onPick: (d: string) => void })
           <li key={r.date}>
             <button
               type="button"
-              disabled={r.date < today}
               onClick={() => onPick(r.date)}
               aria-current={r.date === day || undefined}
               className={cx(
@@ -340,7 +398,7 @@ function Schedule({ day, onPick }: { day: string; onPick: (d: string) => void })
                 <b>{r.date === today ? 'Today' : formatDay(r.date + 'T12:00:00+05:30')}</b>
                 <span className="text-mut">
                   {' '}
-                  · {r.links}/{r.per_day} links · {timeText(r.start_time)}
+                  · {plural(r.links)} · {timeText(r.start_time)}
                 </span>
               </span>
               <Chip tone={STATUS[r.status].tone}>{STATUS[r.status].text}</Chip>

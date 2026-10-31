@@ -1554,7 +1554,7 @@ export interface paths {
         };
         /**
          * Videos History
-         * @description 'Last 14 days: 12 done, 2 missed' (only days since activation).
+         * @description 'Last 14 days: 12 done, 2 missed' (only days since activation). A day without videos is `off`, not missed.
          */
         get: operations["videos_history_api_v1_videos_history_get"];
         put?: never;
@@ -1572,7 +1572,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Admin Videos */
+        /**
+         * Admin Videos
+         * @description One day (default tomorrow): its videos, start time and status. Past days can be opened to look at.
+         */
         get: operations["admin_videos_api_v1_admin_videos_get"];
         put?: never;
         post?: never;
@@ -1591,7 +1594,7 @@ export interface paths {
         };
         /**
          * Video Schedule
-         * @description The last 3 days and the next `days` days: links set, start time, status.
+         * @description The last 3 days and the next `days` days: videos set, start time, status.
          */
         get: operations["video_schedule_api_v1_admin_videos_schedule_get"];
         put?: never;
@@ -1612,15 +1615,15 @@ export interface paths {
         get?: never;
         /**
          * Set Day Videos
-         * @description Sets (or replaces) the given slots and / or the start time of a day. Past days cannot be changed. A day
-         *     members can already watch keeps its start time or moves it earlier (they may be half way).
+         * @description Saves a day: `videos` is the day's whole list in order (video 1, 2 ...; up to video.per_day; an empty list
+         *     removes them all; left out = unchanged) and / or the start time. Until the day goes live everything can change;
+         *     once live only links and titles (same count) and the start time only earlier. Past days cannot be changed.
          */
         put: operations["set_day_videos_api_v1_admin_videos__day__put"];
         post?: never;
         /**
          * Delete Day Videos
-         * @description Removes a day's links and start time, if members cannot watch them yet (the day then uses the last
-         *     full day's links, as any day without links).
+         * @description Removes a day's videos and start time, if members cannot watch them yet. That day then has no videos.
          */
         delete: operations["delete_day_videos_api_v1_admin_videos__day__delete"];
         options?: never;
@@ -3686,7 +3689,10 @@ export interface components {
             date: string;
             /** Videos */
             videos: components["schemas"]["AdminVideo"][];
-            /** Per Day */
+            /**
+             * Per Day
+             * @description The most videos a day
+             */
             per_day: number;
             /**
              * Start Time
@@ -3695,9 +3701,15 @@ export interface components {
             start_time: string | null;
             /**
              * Status
+             * @description empty = no videos (no ₹20 that day); live = only links / titles can change; ended = read only
              * @enum {string}
              */
-            status: "scheduled" | "live" | "ended" | "incomplete";
+            status: "scheduled" | "live" | "ended" | "empty";
+            /**
+             * Version
+             * @description Send back with PUT: a save from an old screen is refused
+             */
+            version: string;
             /** Missing Days */
             missing_days: components["schemas"]["MissingVideoDay"][];
         };
@@ -4360,13 +4372,21 @@ export interface components {
         };
         /** DayVideosModel */
         DayVideosModel: {
-            /** Videos */
-            videos?: components["schemas"]["VideoItemModel"][];
+            /**
+             * Videos
+             * @description The day's whole list, in order (empty = none; left out = unchanged)
+             */
+            videos?: components["schemas"]["VideoLinkModel"][] | null;
             /**
              * Start Time
              * @description IST, HH:MM; when the day's videos go live (none = 12:00 AM)
              */
             start_time?: string | null;
+            /**
+             * Version
+             * @description From GET /admin/videos: refused (409) if the day changed since
+             */
+            version?: string | null;
         };
         /** DevCodeModel */
         DevCodeModel: {
@@ -6283,15 +6303,16 @@ export interface components {
             /** Missing Days */
             missing_days: components["schemas"]["MissingVideoDay"][];
         };
-        /** MissingVideoDay */
+        /**
+         * MissingVideoDay
+         * @description A day (today or soon) without any video: members get no ₹20 that day.
+         */
         MissingVideoDay: {
             /**
              * Date
              * Format: date
              */
             date: string;
-            /** Missing */
-            missing: number;
         };
         /** MobileCheck */
         MobileCheck: {
@@ -8224,6 +8245,11 @@ export interface components {
             date: string;
             /** Done */
             done: boolean;
+            /**
+             * Off
+             * @description No videos that day (not missed)
+             */
+            off: boolean;
         };
         /** VideoDone */
         VideoDone: {
@@ -8245,10 +8271,11 @@ export interface components {
             /** Missed */
             missed: number;
         };
-        /** VideoItemModel */
-        VideoItemModel: {
-            /** Slot */
-            slot: number;
+        /**
+         * VideoLinkModel
+         * @description One video of a day; its number is its place in the list.
+         */
+        VideoLinkModel: {
             /**
              * Platform
              * @enum {string}
@@ -8268,10 +8295,13 @@ export interface components {
             date: string;
             /**
              * Links
-             * @description Links set (of per_day)
+             * @description Videos set that day (1 to per_day)
              */
             links: number;
-            /** Per Day */
+            /**
+             * Per Day
+             * @description The most videos a day
+             */
             per_day: number;
             /**
              * Start Time
@@ -8280,10 +8310,10 @@ export interface components {
             start_time: string | null;
             /**
              * Status
-             * @description incomplete = fewer links than needed: members get the last full day's videos
+             * @description empty = no videos: members get no ₹20 that day
              * @enum {string}
              */
-            status: "scheduled" | "live" | "ended" | "incomplete";
+            status: "scheduled" | "live" | "ended" | "empty";
         };
         /** VideoStarted */
         VideoStarted: {
@@ -8321,7 +8351,7 @@ export interface components {
             eligible: boolean;
             /**
              * Ready
-             * @description False = no complete set of links in the last 30 days, or today's start time is still ahead: no lock, no ₹20 yet
+             * @description False = no videos today, or today's start time is still ahead: no lock, no ₹20 yet
              */
             ready: boolean;
             /**
@@ -8329,11 +8359,6 @@ export interface components {
              * @description Today's videos go live at this time (only while it is ahead)
              */
             starts_at: string | null;
-            /**
-             * Links From
-             * @description Date of the links used when today has no full set
-             */
-            links_from: string | null;
             /**
              * Locked
              * @description True = keep the app locked until today's videos are done

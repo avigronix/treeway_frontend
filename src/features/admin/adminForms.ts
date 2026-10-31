@@ -72,17 +72,14 @@ export function linkProblem(platform: Platform, url: string): string | null {
   return `Use an https ${name} link for this video.`;
 }
 
-/** Filled rows become the request; a half-filled row or a bad link is an error. Saved slots cannot be emptied. */
-export function checkVideoRows(
-  rows: VideoRow[],
-  saved: Set<number>,
-): { items: VideoItem[]; errs: VideoRowErr[] } {
+/** Every row is one video of the day, in order (Vinay 31 Oct: 1 to 4 a day). A half-filled or empty row is an
+ *  error (fill it or remove it); a bad link is an error. Pure, unit tested. */
+export function checkVideoRows(rows: VideoRow[]): { items: VideoItem[]; errs: VideoRowErr[] } {
   const items: VideoItem[] = [];
-  const errs = rows.map((r, i): VideoRowErr => {
+  const errs = rows.map((r): VideoRowErr => {
     const e: VideoRowErr = {};
-    const empty = !r.platform && !r.url.trim() && !r.title.trim();
-    if (empty) {
-      if (saved.has(i + 1)) e.url = 'A saved video cannot be removed. Put the new link here.';
+    if (!r.platform && !r.url.trim() && !r.title.trim()) {
+      e.url = 'Fill in this video or remove it.';
       return e;
     }
     if (!r.platform) e.platform = 'Choose the platform.';
@@ -92,7 +89,7 @@ export function checkVideoRows(
     if (r.title.trim().length < 2) e.title = 'Write a short title.';
     else if (r.title.trim().length > 120) e.title = 'Keep the title under 120 letters.';
     if (!e.platform && !e.url && !e.title)
-      items.push({ slot: i + 1, platform: r.platform as Platform, url: r.url.trim(), title: r.title.trim() });
+      items.push({ platform: r.platform as Platform, url: r.url.trim(), title: r.title.trim() });
     return e;
   });
   return { items, errs };

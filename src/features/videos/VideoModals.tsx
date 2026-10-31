@@ -233,7 +233,7 @@ export function VideosDoneModal({
         </div>
       </div>
       <Button onClick={onClose}>Go to Home</Button>
-      <span className="text-xs text-mut">{today?.per_day ?? 4} new videos will come tomorrow</span>
+      <span className="text-xs text-mut">New videos will come tomorrow</span>
     </Modal>
   );
 }

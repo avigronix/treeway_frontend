@@ -163,7 +163,7 @@ export default function Videos() {
           >
             {history.data.days.map((d, i) => {
               const isToday = i === history.data.days.length - 1;
-              const label = `${formatDay(d.date)}: ${d.done ? 'watched' : isToday ? 'today' : 'missed'}`;
+              const label = `${formatDay(d.date)}: ${d.done ? 'watched' : d.off ? 'no videos' : isToday ? 'today' : 'missed'}`;
               return (
                 <li
                   key={d.date}
@@ -173,9 +173,11 @@ export default function Videos() {
                     'h-6 rounded-[5px]',
                     d.done
                       ? 'bg-leaf'
-                      : isToday
-                        ? 'border-[1.5px] border-dashed border-field'
-                        : 'bg-[#F28B82]',
+                      : d.off // no videos that day (Vinay 31 Oct): not missed
+                        ? 'bg-mbg'
+                        : isToday
+                          ? 'border-[1.5px] border-dashed border-field'
+                          : 'bg-[#F28B82]',
                   )}
                 />
               );
@@ -184,7 +186,7 @@ export default function Videos() {
         )}
         <span className="text-xs text-mut">
           Green = watched{t ? ` (${formatMoney(t.reward, 'always')})` : ''} · Red = missed (no money for that
-          day)
+          day) · Grey = no videos that day
         </span>
       </Card>
       <Note>

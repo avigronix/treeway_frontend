@@ -229,9 +229,8 @@ export default function AdminDash() {
       {dash.isError && <ErrorBox error={dash.error} onRetry={() => dash.refetch()} />}
       {q && q.video_days_missing.length > 0 && (
         <Note tone="warn">
-          Daily videos missing:{' '}
-          {q.video_days_missing.map((v) => `${formatDay(v.date)} (${v.missing})`).join(', ')}. Add them before
-          12 midnight, or members cannot finish the login videos.
+          No daily videos yet for {q.video_days_missing.map((v) => formatDay(v.date)).join(', ')}. Add at
+          least one before 12 midnight, or members get no video reward that day.
         </Note>
       )}
 

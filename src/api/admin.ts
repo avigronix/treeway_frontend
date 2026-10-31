@@ -14,7 +14,7 @@ export type AdminLedgerRow = Schema<'AdminLedgerRow'>;
 export type ApprovalWaiting = Schema<'ApprovalWaiting'>;
 export type AdminSettings = Schema<'AdminSettings'>;
 export type AdminVideos = Schema<'AdminVideos'>;
-export type VideoItem = Schema<'VideoItemModel'>;
+export type VideoItem = Schema<'VideoLinkModel'>;
 export type CompanyDetail = Schema<'CompanyDetail'>;
 /** Text fields of the company details form (the QR is a file). */
 export type CompanyFields = Omit<CompanyDetail, 'qr_path'>;
@@ -163,10 +163,11 @@ export const adminApi = {
   /** One day's videos (default: tomorrow, IST) and the days still missing links. */
   videos: (day: string | undefined, signal?: AbortSignal) =>
     api<AdminVideos>('/admin/videos', { query: { day }, signal }),
-  /** Links and / or the day's start time (India time "09:00"; omitted = unchanged). */
-  saveVideos: (day: string, videos: VideoItem[], start_time?: string) =>
-    api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'PUT', json: { videos, start_time } }),
-  /** Removes a day's links and time (only while members cannot watch them yet). */
+  /** The day's whole list in order (video 1, 2 ...; omitted = unchanged) and / or the start time (India time
+   *  "09:00"; omitted = unchanged). `version` from the GET: a save from an old screen is refused (409). */
+  saveVideos: (day: string, body: { videos?: VideoItem[]; start_time?: string; version: string }) =>
+    api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'PUT', json: body }),
+  /** Removes a day's videos and time (only while members cannot watch them yet): that day has no videos. */
   deleteVideos: (day: string) => api<Schema<'MissingDays'>>(`/admin/videos/${day}`, { method: 'DELETE' }),
   /** The last 3 days and the next `days`: links set, start time, status. */
   videoSchedule: (days: number, signal?: AbortSignal) =>
