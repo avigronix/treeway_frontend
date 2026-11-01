@@ -122,7 +122,7 @@ function PayTab() {
 
   const [send, sending] = useSingleFlight(async () => {
     setError(null);
-    const u = v.utr.safeParse(utr);
+    const u = v.upiUtr.safeParse(utr);
     setUtrErr(u.success ? null : (u.error.issues[0]?.message ?? 'Enter the UTR.'));
     if (!file) setFileErr('Add the payment receipt or screenshot.');
     if (!u.success || !file) return;
@@ -175,8 +175,8 @@ function PayTab() {
       <h2 className="m-0 text-[14.5px] font-bold">2. Send the payment details</h2>
       <TextField
         label="UTR number of your payment (12 digits)"
-        help="You can find it in your UPI app's payment history"
-        autoCapitalize="characters"
+        help={v.UPI_UTR_HELP}
+        inputMode="numeric"
         autoComplete="off"
         value={utr}
         onChange={(e) => setUtr(e.target.value)}

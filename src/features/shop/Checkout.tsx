@@ -19,6 +19,7 @@ import {
   TextField,
 } from '@/components/ui';
 import { useSingleFlight } from '@/lib/useSingleFlight';
+import { UPI_UTR_HELP, cleanUpiUtr } from '@/lib/validators';
 import { useMe } from '@/auth/session';
 import { useConfig } from '@/features/auth/usePublic';
 import { MemberPage } from '@/features/member/MemberPage';
@@ -125,7 +126,7 @@ export default function Checkout() {
       if (!file) setFileErr('Add the payment screenshot.');
       return;
     }
-    const utr = all.utr.trim().toUpperCase();
+    const utr = cleanUpiUtr(all.utr);
     try {
       const done = await shopApi.placeOrder({
         items: lines.map((l) => ({ product_id: l.id, qty: l.qty })),
@@ -278,8 +279,10 @@ export default function Checkout() {
           </b>
           <CompanyPay />
           <TextField
-            label="UTR / transaction ID"
-            autoCapitalize="characters"
+            label="UTR (12 digits)"
+            help={UPI_UTR_HELP}
+            inputMode="numeric"
+            autoComplete="off"
             value={f.utr}
             onChange={(e) => set('utr')(e.target.value)}
             error={errs.utr}

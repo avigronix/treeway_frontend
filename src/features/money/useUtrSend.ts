@@ -24,7 +24,7 @@ export function useUtrSend(requests: ReturnType<typeof useMyRequests>) {
     async (form: Omit<PaymentRequestForm, 'utr' | 'receipt'>, ok: string, extraValid = true) => {
       setError(null);
       setDone(null);
-      const u = v.utr.safeParse(utr);
+      const u = v.upiUtr.safeParse(utr);
       setUtrErr(u.success ? null : (u.error.issues[0]?.message ?? 'Enter the UTR.'));
       if (!file) setFileErr('Add the payment receipt or screenshot.');
       if (!u.success || !file || !extraValid) return false;

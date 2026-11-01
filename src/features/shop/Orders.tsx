@@ -18,7 +18,7 @@ import {
 } from '@/components/ui';
 import { formatDay } from '@/lib/dates';
 import { useSingleFlight } from '@/lib/useSingleFlight';
-import { UTR_RE } from '@/lib/validators';
+import { UPI_UTR_ERROR, UPI_UTR_RE, cleanUpiUtr } from '@/lib/validators';
 import { cx } from '@/lib/cx';
 import { MemberPage } from '@/features/member/MemberPage';
 import { ORDER_LABEL, orderSteps } from './shopText';
@@ -89,10 +89,10 @@ function ResendUtr({ o }: { o: Order }) {
   const [error, setError] = useState<unknown>(null);
   const [send, busy] = useSingleFlight(async () => {
     setError(null);
-    const u = utr.trim().toUpperCase();
-    setUtrErr(UTR_RE.test(u) ? null : 'Enter the UTR of the new payment.');
+    const u = cleanUpiUtr(utr);
+    setUtrErr(UPI_UTR_RE.test(u) ? null : UPI_UTR_ERROR);
     if (!file) setFileErr('Add the payment screenshot.');
-    if (!UTR_RE.test(u) || !file) return;
+    if (!UPI_UTR_RE.test(u) || !file) return;
     try {
       await shopApi.resendUtr(o.id, u, file);
     } catch (e) {
@@ -110,8 +110,9 @@ function ResendUtr({ o }: { o: Order }) {
         order is cancelled and the product money comes back.
       </span>
       <TextField
-        label="New UTR"
-        autoCapitalize="characters"
+        label="New UTR (12 digits)"
+        inputMode="numeric"
+        autoComplete="off"
         value={utr}
         onChange={(e) => setUtr(e.target.value)}
         error={utrErr}

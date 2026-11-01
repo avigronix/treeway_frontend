@@ -6,6 +6,7 @@ import { refreshMoney } from '@/api/queryClient';
 import { Button, Card, ErrorBox, FilePicker, Money, Note, Sheet, Tabs, TextField } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
 import { useSingleFlight } from '@/lib/useSingleFlight';
+import { UPI_UTR_HELP } from '@/lib/validators';
 import { useConfig } from '@/features/auth/usePublic';
 import { useWalletSummary } from '@/features/member/data';
 import { MemberPage } from '@/features/member/MemberPage';
@@ -133,7 +134,8 @@ export default function BuyPins() {
           </Card>
           <TextField
             label="UTR (12 digits)"
-            autoCapitalize="characters"
+            help={UPI_UTR_HELP}
+            inputMode="numeric"
             autoComplete="off"
             value={f.utr}
             onChange={(e) => f.setUtr(e.target.value)}

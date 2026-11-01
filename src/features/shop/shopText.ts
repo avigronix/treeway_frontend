@@ -1,4 +1,4 @@
-import { MOBILE_RE, UTR_RE } from '@/lib/validators';
+import { MOBILE_RE, UPI_UTR_ERROR, UPI_UTR_RE, cleanUpiUtr } from '@/lib/validators';
 
 // Pure helpers of the shop screens (unit tested). The server checks everything again.
 
@@ -20,11 +20,7 @@ export function checkCheckout(f: CheckoutFields, checked: boolean, hasFile: bool
         : 'Write the full address (house, village / street, district).',
     pincode: /^[1-9]\d{5}$/.test(f.pincode.trim()) ? undefined : 'Enter a valid 6 digit PIN code.',
     quote: checked ? undefined : 'Press "Check" next to the PIN code to see the delivery charge.',
-    utr: !checked
-      ? undefined
-      : UTR_RE.test(f.utr.trim())
-        ? undefined
-        : 'Enter the UTR of the delivery payment.',
+    utr: !checked ? undefined : UPI_UTR_RE.test(cleanUpiUtr(f.utr)) ? undefined : UPI_UTR_ERROR,
     file: !checked || hasFile ? undefined : 'Add the payment screenshot.',
   };
 }

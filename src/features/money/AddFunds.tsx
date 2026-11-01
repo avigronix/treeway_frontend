@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { Button, Card, ErrorBox, FilePicker, Note, TextField } from '@/components/ui';
 import { formatMoney } from '@/lib/money';
+import { UPI_UTR_HELP } from '@/lib/validators';
 import { MemberPage } from '@/features/member/MemberPage';
 import { useMyRequests } from './data';
 import { amountText, checkAmount } from './moneyForm';
@@ -55,8 +56,8 @@ export default function AddFunds() {
         />
         <TextField
           label="UTR (12 digits)"
-          help="You can find it in your UPI app's payment history"
-          autoCapitalize="characters"
+          help={UPI_UTR_HELP}
+          inputMode="numeric"
           autoComplete="off"
           value={f.utr}
           onChange={(e) => f.setUtr(e.target.value)}

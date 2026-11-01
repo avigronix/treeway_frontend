@@ -4303,6 +4303,14 @@ export interface components {
             /** Rate Not Set */
             rate_not_set: components["schemas"]["RateNotSet"][];
         };
+        /**
+         * CourierRefundModel
+         * @description The admin sent the delivery money back from the bank: a bank UTR, not a member's UPI one.
+         */
+        CourierRefundModel: {
+            /** Courier Utr */
+            courier_utr: string;
+        };
         /** CourierReviewModel */
         CourierReviewModel: {
             /**
@@ -6732,11 +6740,6 @@ export interface components {
             courier_name?: string | null;
             /** Tracking No */
             tracking_no?: string | null;
-        };
-        /** OrderUtrModel */
-        OrderUtrModel: {
-            /** Courier Utr */
-            courier_utr: string;
         };
         /** P2PLimits */
         P2PLimits: {
@@ -11975,7 +11978,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["OrderUtrModel"];
+                "application/json": components["schemas"]["CourierRefundModel"];
             };
         };
         responses: {
