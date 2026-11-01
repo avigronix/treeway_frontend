@@ -7,7 +7,7 @@ import { monthName } from './ledger';
 import { MemberPage } from './MemberPage';
 import { directsLines, rankLabel } from './rankText';
 
-// B5 "Rank and Royalty" from GET /rank/me (numbers from last night's count, `as_of`).
+// B5 "Rank and Royalty" from GET /rank/me (directs live; team numbers from the night count, `as_of`).
 
 export default function Rank() {
   const r = useQuery({ queryKey: ['income', 'rank'], queryFn: ({ signal }) => memberApi.rank(signal) });
@@ -53,7 +53,7 @@ export default function Rank() {
               <Bar value={d.next.counted} max={d.next.need} label={`Progress to ${d.next.name}`} gold thick />
               {d.rank === 0 && (
                 <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[13px]" aria-label="Your directs">
-                  {directsLines(d.directs, d.next_count_at).map((l, i) => (
+                  {directsLines(d.directs).map((l, i) => (
                     <li key={l} className={i === 0 ? 'font-bold' : 'text-mut'}>
                       {l}
                     </li>
@@ -119,7 +119,12 @@ export default function Rank() {
                 : `With ${d.s3_level.directs_needed} active directs you get a share every month for 6 months, from the next ${ordinal(d.pay_day)}.`}
             </span>
           </Card>
-          {d.as_of && <Note>Counted on {formatWhen(d.as_of)}. Rank numbers update every night.</Note>}
+          {d.as_of && (
+            <Note>
+              Directs count the moment they are activated. Team numbers (Silver and up) are counted every
+              night; last count {formatWhen(d.as_of)}.
+            </Note>
+          )}
         </>
       )}
     </MemberPage>

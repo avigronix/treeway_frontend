@@ -1,0 +1,1 @@
+function e(e){return e??`User`}function t(e){let t=[`${e.joined} direct${e.joined===1?``:`s`} joined · ${e.active_now} active`],n=e.joined-e.active_now;return n>0&&t.push(`${n} ${n===1?`is`:`are`} not active yet: a direct counts once their activation is approved.`),t}function n(e,t=Date.now()){return!e||t-new Date(e).getTime()>936e5}export{n,e as r,t};

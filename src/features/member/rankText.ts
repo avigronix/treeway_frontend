@@ -1,10 +1,8 @@
-import { formatTime } from '@/lib/dates';
-
 // What the Rank screen says about directs (Vinay 26 Oct: "5 directs but no rank"). Distributor needs 5 ACTIVE
-// directs, counted every night (SRS 4.4). Pure, unit tested.
+// directs (SRS 4.4); since 1 Nov a direct counts the moment it is activated. Pure, unit tested.
 
 /** What a member is called where a rank is shown: the rank, or "User" until the first rank (Distributor: 5
- *  active directs, counted at night). Vinay 29 Oct: a new member shows "User", not "Member" or "No rank yet". */
+ *  active directs). Vinay 29 Oct: a new member shows "User", not "Member" or "No rank yet". */
 export function rankLabel(rankName: string | null | undefined): string {
   return rankName ?? 'User';
 }
@@ -15,13 +13,8 @@ export interface DirectsNow {
   counted: number;
 }
 
-export function directsLines(d: DirectsNow, nextCountAt: string): string[] {
-  const lines = [
-    `${d.joined} direct${d.joined === 1 ? '' : 's'} joined · ${d.active_now} active now · ${d.counted} counted last night`,
-  ];
-  const soon = d.active_now - d.counted;
-  if (soon > 0)
-    lines.push(`${soon} more count${soon === 1 ? 's' : ''} at tonight's count (${formatTime(nextCountAt)}).`);
+export function directsLines(d: DirectsNow): string[] {
+  const lines = [`${d.joined} direct${d.joined === 1 ? '' : 's'} joined · ${d.active_now} active`];
   const waiting = d.joined - d.active_now;
   if (waiting > 0)
     lines.push(
