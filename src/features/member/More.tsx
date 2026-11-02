@@ -141,6 +141,7 @@ export default function More() {
             icon={Icon.complaints}
             right={open > 0 ? <Chip tone="wait">{open} open</Chip> : undefined}
           />
+          <Item to="/cashbook" label="Cash Book" icon={Icon.cashbook} />
           <Item to="/profile" label="Profile and bank" icon={Icon.profile} />
         </ul>
       </Card>

@@ -101,6 +101,7 @@ export const Icon = {
     </>,
   ),
   audit: svg(<path d="M8 4h11v16H5V7zM8 4v3H5M9 11h6M9 15h6" />),
+  cashbook: svg(<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12M9 8h6M9 11h4" />),
   logout: svg(<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />),
   menu: svg(<path d="M4 6h16M4 12h16M4 18h16" />),
   collapse: svg(<path d="M15 6l-6 6 6 6" />),

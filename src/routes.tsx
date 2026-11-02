@@ -79,6 +79,12 @@ const Shop = lazy(() => import('@/features/shop/Shop'));
 const Checkout = lazy(() => import('@/features/shop/Checkout'));
 const Orders = lazy(() => import('@/features/shop/Orders'));
 const AskDoctor = lazy(() => import('@/features/doctor/AskDoctor'));
+const CashBook = lazy(() => import('@/features/cashbook/CashBook'));
+// The admin's own Cash Book: the same screen inside the admin frame (Vinay 2 Nov: every account has one).
+const AdminCashBook = lazy(async () => {
+  const { CashBookScreen } = await import('@/features/cashbook/CashBook');
+  return { default: () => <CashBookScreen admin /> };
+});
 const NotFound = lazy(() => import('@/features/member/NotFound'));
 
 export const routes: RouteObject[] = [
@@ -129,6 +135,7 @@ export const routes: RouteObject[] = [
               { path: 'doctors', element: guarded(AdminDoctors) },
               { path: 'complaints', element: guarded(AdminComplaints) },
               { path: 'complaints/:id', element: guarded(AdminComplaintDetail) },
+              { path: 'cashbook', element: guarded(AdminCashBook) },
               { path: '*', element: guarded(adminSoon('Page not found')) },
             ],
           },
@@ -177,6 +184,7 @@ export const routes: RouteObject[] = [
               { path: '/shop/checkout', element: guarded(Checkout) },
               { path: '/shop/orders', element: guarded(Orders) },
               { path: '/ask-doctor', element: guarded(AskDoctor) },
+              { path: '/cashbook', element: guarded(CashBook) },
               { path: '*', element: guarded(NotFound) },
             ],
           },

@@ -1640,7 +1640,7 @@ export interface paths {
         };
         /**
          * My Rank
-         * @description 'Rank and Royalty' screen. Numbers are from last night's count (`as_of`).
+         * @description 'Rank and Royalty' screen. Directs are live (Vinay 1 Nov); team numbers are from the night count (`as_of`).
          */
         get: operations["my_rank_api_v1_rank_me_get"];
         put?: never;
@@ -2547,6 +2547,164 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/businesses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Home
+         * @description My businesses (with totals) and the books other people shared with my mobile.
+         */
+        get: operations["home_api_v1_cashbook_businesses_get"];
+        put?: never;
+        /** Add Business */
+        post: operations["add_business_api_v1_cashbook_businesses_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/businesses/{businessId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Rename Business */
+        put: operations["rename_business_api_v1_cashbook_businesses__businessId__put"];
+        post?: never;
+        /**
+         * Delete Business
+         * @description Its books, members and entries go too (ON DELETE CASCADE).
+         */
+        delete: operations["delete_business_api_v1_cashbook_businesses__businessId__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/businesses/{businessId}/books": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Books */
+        get: operations["books_api_v1_cashbook_businesses__businessId__books_get"];
+        put?: never;
+        /** Add Book */
+        post: operations["add_book_api_v1_cashbook_businesses__businessId__books_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/books/{bookId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Book Detail */
+        get: operations["book_detail_api_v1_cashbook_books__bookId__get"];
+        /** Rename Book */
+        put: operations["rename_book_api_v1_cashbook_books__bookId__put"];
+        post?: never;
+        /**
+         * Delete Book
+         * @description Its members and entries go too (ON DELETE CASCADE).
+         */
+        delete: operations["delete_book_api_v1_cashbook_books__bookId__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/books/{bookId}/entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Entries
+         * @description Newest first. search = words in the remark.
+         */
+        get: operations["entries_api_v1_cashbook_books__bookId__entries_get"];
+        put?: never;
+        /** Add Entry */
+        post: operations["add_entry_api_v1_cashbook_books__bookId__entries_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/entries/{entryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Entry */
+        put: operations["edit_entry_api_v1_cashbook_entries__entryId__put"];
+        post?: never;
+        /** Delete Entry */
+        delete: operations["delete_entry_api_v1_cashbook_entries__entryId__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/books/{bookId}/members": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add Member
+         * @description Any valid mobile, with or without a Treeway account: they see the book as soon as they log in.
+         */
+        post: operations["add_member_api_v1_cashbook_books__bookId__members_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cashbook/books/{bookId}/members/{mobile}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Remove Member */
+        delete: operations["remove_member_api_v1_cashbook_books__bookId__members__mobile__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3976,6 +4134,215 @@ export interface components {
             /** In Stock */
             in_stock: boolean;
         };
+        /** CashBookBook */
+        CashBookBook: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Total In */
+            total_in: number;
+            /** Total Out */
+            total_out: number;
+            /** Balance */
+            balance: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CashBookBookDetail */
+        CashBookBookDetail: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Business Id */
+            business_id: number;
+            /** Business Name */
+            business_name: string;
+            /** Owner Mobile */
+            owner_mobile: string;
+            /** Is Owner */
+            is_owner: boolean;
+            /** Total In */
+            total_in: number;
+            /** Total Out */
+            total_out: number;
+            /** Balance */
+            balance: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /**
+             * Members
+             * @description Only for the owner; empty for a view-only member
+             */
+            members: components["schemas"]["CashBookMember"][];
+        };
+        /** CashBookBusiness */
+        CashBookBusiness: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Book Count */
+            book_count: number;
+            /** Total In */
+            total_in: number;
+            /** Total Out */
+            total_out: number;
+            /**
+             * Balance
+             * @description total_in - total_out of all its books
+             */
+            balance: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CashBookBusinessBooks */
+        CashBookBusinessBooks: {
+            business: components["schemas"]["CashBookBusiness"];
+            /** Books */
+            books: components["schemas"]["CashBookBook"][];
+        };
+        /** CashBookEntriesPage */
+        CashBookEntriesPage: {
+            /** Rows */
+            rows: components["schemas"]["CashBookEntry"][];
+            /**
+             * Total
+             * @description Rows in the whole list
+             */
+            total: number;
+            /** Page */
+            page: number;
+            /** Limit */
+            limit: number;
+            /**
+             * Next Cursor
+             * @description Send as ?cursor= for the next page; null = no more rows
+             */
+            next_cursor: string | null;
+        };
+        /** CashBookEntry */
+        CashBookEntry: {
+            /** Id */
+            id: number;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "in" | "out";
+            /** Amount */
+            amount: number;
+            /**
+             * Entry Date
+             * Format: date-time
+             */
+            entry_date: string;
+            /** Remark */
+            remark: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** CashBookEntryModel */
+        CashBookEntryModel: {
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "in" | "out";
+            /**
+             * Amount
+             * @description Rupees, at most 2 decimals (max ₹100 crore)
+             */
+            amount: number;
+            /**
+             * Entry Date
+             * Format: date-time
+             * @description Date + time of the entry; without a time zone it is IST
+             */
+            entry_date: string;
+            /** Remark */
+            remark?: string | null;
+        };
+        /** CashBookHome */
+        CashBookHome: {
+            /** Businesses */
+            businesses: components["schemas"]["CashBookBusiness"][];
+            /** Shared */
+            shared: components["schemas"]["CashBookSharedBook"][];
+        };
+        /** CashBookMember */
+        CashBookMember: {
+            /** Mobile */
+            mobile: string;
+            /**
+             * Added At
+             * Format: date-time
+             */
+            added_at: string;
+            /**
+             * Joined
+             * @description A Treeway account with this mobile exists (display only; never blocks access)
+             */
+            joined: boolean;
+        };
+        /** CashBookMemberModel */
+        CashBookMemberModel: {
+            /** Mobile */
+            mobile: string;
+        };
+        /** CashBookNameModel */
+        CashBookNameModel: {
+            /** Name */
+            name: string;
+        };
+        /**
+         * CashBookSharedBook
+         * @description A book someone else added this user's mobile to: view only.
+         */
+        CashBookSharedBook: {
+            /** Id */
+            id: number;
+            /** Name */
+            name: string;
+            /** Business Name */
+            business_name: string;
+            /** Owner Mobile */
+            owner_mobile: string;
+            /** Total In */
+            total_in: number;
+            /** Total Out */
+            total_out: number;
+            /** Balance */
+            balance: number;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
         /** Category */
         Category: {
             /** Id */
@@ -4721,6 +5088,46 @@ export interface components {
             /** Status */
             status: number;
             data: components["schemas"]["BankHoldSkipped"];
+        };
+        /** Envelope[CashBookBookDetail] */
+        Envelope_CashBookBookDetail_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["CashBookBookDetail"];
+        };
+        /** Envelope[CashBookBook] */
+        Envelope_CashBookBook_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["CashBookBook"];
+        };
+        /** Envelope[CashBookBusinessBooks] */
+        Envelope_CashBookBusinessBooks_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["CashBookBusinessBooks"];
+        };
+        /** Envelope[CashBookEntriesPage] */
+        Envelope_CashBookEntriesPage_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["CashBookEntriesPage"];
+        };
+        /** Envelope[CashBookHome] */
+        Envelope_CashBookHome_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["CashBookHome"];
         };
         /** Envelope[CompanyDetail] */
         Envelope_CompanyDetail_: {
@@ -13056,6 +13463,491 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_AdminGullak_"];
+                };
+            };
+        };
+    };
+    home_api_v1_cashbook_businesses_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_CashBookHome_"];
+                };
+            };
+        };
+    };
+    add_business_api_v1_cashbook_businesses_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookNameModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_IdOnly_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_business_api_v1_cashbook_businesses__businessId__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookNameModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_business_api_v1_cashbook_businesses__businessId__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    books_api_v1_cashbook_businesses__businessId__books_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_CashBookBusinessBooks_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_book_api_v1_cashbook_businesses__businessId__books_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookNameModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_CashBookBook_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    book_detail_api_v1_cashbook_books__bookId__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_CashBookBookDetail_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    rename_book_api_v1_cashbook_books__bookId__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookNameModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_book_api_v1_cashbook_books__bookId__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    entries_api_v1_cashbook_books__bookId__entries_get: {
+        parameters: {
+            query?: {
+                search?: string;
+                page?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_CashBookEntriesPage_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_entry_api_v1_cashbook_books__bookId__entries_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookEntryModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_IdOnly_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    edit_entry_api_v1_cashbook_entries__entryId__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entryId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookEntryModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_entry_api_v1_cashbook_entries__entryId__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                entryId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_member_api_v1_cashbook_books__bookId__members_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashBookMemberModel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_member_api_v1_cashbook_books__bookId__members__mobile__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                bookId: number;
+                mobile: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_List_Any__"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

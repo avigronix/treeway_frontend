@@ -87,6 +87,7 @@ const I = {
   ),
   logout: svg(<path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10" />),
   audit: svg(<path d="M8 4h11v16H5V7zM8 4v3H5M9 11h6M9 15h6" />),
+  cashbook: svg(<path d="M5 4h12a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h12M9 8h6M9 11h4" />),
   menu: svg(<path d="M4 6h16M4 12h16M4 18h16" />),
 };
 
@@ -147,6 +148,7 @@ function Menu({ onPick }: { onPick?: () => void }) {
       {link('/admin/withdrawals', I.wd, 'Withdrawals', <Count n={q?.withdrawals} />)}
       {link('/admin/pins', I.pins, 'PINs')}
       {link('/admin/income', I.income, 'Income and TDS')}
+      {link('/admin/cashbook', I.cashbook, 'Cash Book')}
       {sec('People')}
       {link('/admin/members', I.members, 'Members')}
       {link('/admin/super3', I.super3, 'Super 3')}
@@ -247,6 +249,7 @@ function groups(q: Queue | undefined): NavGroup[] {
         },
         { to: '/admin/pins', label: 'PINs', icon: Icon.pins },
         { to: '/admin/income', label: 'Income and TDS', icon: Icon.income },
+        { to: '/admin/cashbook', label: 'Cash Book', icon: Icon.cashbook },
       ],
     },
     {
@@ -289,6 +292,7 @@ const SECTIONS: [string, string][] = [
   ['/admin/withdrawals', 'Withdrawals'],
   ['/admin/pins', 'PINs'],
   ['/admin/income', 'Income and TDS'],
+  ['/admin/cashbook', 'Cash Book'],
   ['/admin/members', 'Members'],
   ['/admin/super3', 'Super 3'],
   ['/admin/complaints', 'Complaints'],

@@ -33,6 +33,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: '/wallet', label: 'Wallet', icon: Icon.wallet },
       { to: '/pins', label: 'My PINs', icon: Icon.pins },
+      { to: '/cashbook', label: 'Cash Book', icon: Icon.cashbook },
     ],
   },
   {

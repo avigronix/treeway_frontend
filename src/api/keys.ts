@@ -8,4 +8,10 @@ export const qk = {
   paymentRequests: (purpose: string) => ['payment-requests', purpose] as const,
   pins: (tab: string) => ['pins', tab] as const,
   wallet: ['wallet'] as const,
+  // Cash Book: every key starts with 'cashbook', so one invalidate refreshes all its lists and totals.
+  cashbook: ['cashbook'] as const,
+  cbHome: ['cashbook', 'home'] as const,
+  cbBooks: (businessId: number) => ['cashbook', 'books', businessId] as const,
+  cbBook: (id: number) => ['cashbook', 'book', id] as const,
+  cbEntries: (id: number, search: string) => ['cashbook', 'entries', id, search] as const,
 };

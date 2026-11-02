@@ -217,7 +217,20 @@ function DoctorActions({ d, doctors, onDone }: { d: Doc; doctors: Doc[]; onDone:
   );
 }
 
-function RequestSheet({ r, doctors, onClose }: { r: Req; doctors: Doc[]; onClose: (m?: string) => void }) {
+function RequestSheet({
+  r,
+  doctors,
+  doctorsError,
+  onRetry,
+  onClose,
+}: {
+  r: Req;
+  /** undefined = the doctor list is still loading (or failed): never read that as "no doctor". */
+  doctors: Doc[] | undefined;
+  doctorsError: unknown;
+  onRetry: () => void;
+  onClose: (m?: string) => void;
+}) {
   const done = useDone();
   const [to, setTo] = useState('');
   const [remark, setRemark] = useState('');
@@ -239,6 +252,8 @@ function RequestSheet({ r, doctors, onClose }: { r: Req; doctors: Doc[]; onClose
       await done();
     }
   });
+  // Only another active doctor can take it (never the one who has it, never a blocked one).
+  const others = (doctors ?? []).filter((d) => d.status === 'active' && d.user_code !== r.doctor_code);
   return (
     <Sheet open onClose={() => onClose()} title={`${r.full_name} · ${r.user_code}`} locked={busy}>
       <span className="text-xs text-mut">
@@ -266,14 +281,30 @@ function RequestSheet({ r, doctors, onClose }: { r: Req; doctors: Doc[]; onClose
           {p.advice && <span className="text-mut">{p.advice}</span>}
         </div>
       ))}
-      {r.status === 'waiting' && (
+      {r.status === 'waiting' &&
+        !doctors &&
+        (doctorsError ? (
+          <ErrorBox error={doctorsError} onRetry={onRetry} />
+        ) : (
+          <span className="text-xs text-mut">Loading the doctors…</span>
+        ))}
+      {r.status === 'waiting' && doctors && !others.length && (
+        // Not an empty list with a button that can only fail: say why and what to do.
+        <Note tone="info">
+          {r.doctor_name
+            ? `This request is with ${r.doctor_name}, the only active doctor. To move it, add another doctor or unblock one.`
+            : 'No active doctor yet. Add a doctor first.'}
+        </Note>
+      )}
+      {r.status === 'waiting' && others.length > 0 && (
         <>
           <SelectField
             label="Move to doctor"
             placeholder="Choose"
-            options={doctors
-              .filter((d) => d.status === 'active' && d.user_code !== r.doctor_code)
-              .map((d) => ({ value: d.user_code, label: `${d.full_name} (${d.waiting} waiting)` }))}
+            options={others.map((d) => ({
+              value: d.user_code,
+              label: `${d.full_name} (${d.waiting} waiting)`,
+            }))}
             value={to}
             onChange={(e) => setTo(e.target.value)}
           />
@@ -421,7 +452,9 @@ export default function AdminDoctors() {
       {open && (
         <RequestSheet
           r={open}
-          doctors={doctors}
+          doctors={docs.data}
+          doctorsError={docs.isError ? docs.error : null}
+          onRetry={() => docs.refetch()}
           onClose={(m) => {
             setOpen(null);
             if (m) setMsg(m);
