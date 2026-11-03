@@ -247,7 +247,10 @@ function MyBooks({ home, base, notify }: { home: CbHome; base: string; notify: N
 
       <Hero>
         <span className="text-[13px] opacity-90">Total balance · {biz.name}</span>
-        <Money value={card.balance} className="text-[28px] font-bold" />
+        <Money
+          value={card.balance}
+          className="text-[28px] leading-tight font-bold [overflow-wrap:anywhere]"
+        />
         <span className="text-[13px] opacity-90">
           {formatCount(card.book_count)} {card.book_count === 1 ? 'book' : 'books'} · In{' '}
           <Money value={card.total_in} /> · Out <Money value={card.total_out} />

@@ -50,20 +50,27 @@ export function BookGone({
 }
 
 function Totals({ book }: { book: CbBookDetail }) {
+  // A money figure is never cut ("₹54,86,4…"): on a phone In / Out share a row and Balance gets the full width;
+  // a very big amount wraps to a second line instead of hiding digits.
   const box = 'flex min-w-0 flex-col gap-0.5 rounded-2xl border p-3';
+  const amount = 'leading-tight font-bold [overflow-wrap:anywhere] tab:text-lg';
   return (
-    <div className="grid grid-cols-3 gap-2 tab:gap-3">
+    <div className="grid grid-cols-2 gap-2 tab:grid-cols-3 tab:gap-3">
       <div role="group" aria-label="Cash In" className={`${box} border-okbg bg-okbg`}>
         <span className="text-xs font-semibold text-ok">Cash In</span>
-        <Money value={book.total_in} className="truncate text-[15px] font-bold text-ok tab:text-lg" />
+        <Money value={book.total_in} className={`${amount} text-[15px] text-ok`} />
       </div>
       <div role="group" aria-label="Cash Out" className={`${box} border-bbg bg-bbg`}>
         <span className="text-xs font-semibold text-b">Cash Out</span>
-        <Money value={book.total_out} className="truncate text-[15px] font-bold text-b tab:text-lg" />
+        <Money value={book.total_out} className={`${amount} text-[15px] text-b`} />
       </div>
-      <div role="group" aria-label="Balance" className={`${box} border-line bg-card`}>
+      <div
+        role="group"
+        aria-label="Balance"
+        className={`${box} col-span-2 flex-row items-center justify-between gap-2 border-line bg-card tab:col-span-1 tab:flex-col tab:items-start tab:justify-start`}
+      >
         <span className="text-xs font-semibold text-lab">Balance</span>
-        <Money value={book.balance} className="truncate text-[15px] font-bold tab:text-lg" />
+        <Money value={book.balance} className={`${amount} text-right text-lg tab:text-left`} />
       </div>
     </div>
   );
