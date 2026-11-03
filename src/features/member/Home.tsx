@@ -232,7 +232,7 @@ export default function Home() {
               <span className="text-xs text-mut">{formatCount(team.directs)} joined with your link</span>
             )}
           </div>
-          <InviteBox link={me?.referral_link} mode="share" />
+          <InviteBox link={me?.referral_link} inactive={me?.status === 'inactive'} mode="share" />
         </Card>
       </div>
 
@@ -278,7 +278,7 @@ export default function Home() {
             <VideosCard className="rounded-[14px] p-[18px]" />
             <div className="flex flex-col gap-2.5 rounded-[14px] border border-line bg-white p-[18px]">
               <b>Invite and earn</b>
-              <InviteBox link={me?.referral_link} mode="copy" />
+              <InviteBox link={me?.referral_link} inactive={me?.status === 'inactive'} mode="copy" />
             </div>
           </div>
         </div>

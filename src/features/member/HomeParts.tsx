@@ -106,8 +106,23 @@ export function VideosCard({ className }: { className?: string }) {
 }
 
 /** Referral link with Share (phone share sheet) or Copy. Only active IDs have a link (backend rule). */
-export function InviteBox({ link, mode }: { link: string | null | undefined; mode: 'share' | 'copy' }) {
+/** `inactive`: the server gives the link only to an active ID, so say how to get it (Vinay 3 Nov). */
+export function InviteBox({
+  link,
+  inactive,
+  mode,
+}: {
+  link: string | null | undefined;
+  inactive: boolean;
+  mode: 'share' | 'copy';
+}) {
   const [state, setState] = useState<'idle' | 'done' | 'fail'>('idle');
+  if (inactive)
+    return (
+      <p className="m-0 rounded-[10px] bg-bg px-3 py-2.5 text-[13px] text-mut">
+        Activate your ID to get your referral link. Then share it and earn.
+      </p>
+    );
   if (!link) return <Skeleton className="h-11 w-full" />;
   const short = link.replace(/^https?:\/\//, '');
 

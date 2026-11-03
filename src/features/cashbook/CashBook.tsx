@@ -132,7 +132,7 @@ function MyBooks({ home, base, notify }: { home: CbHome; base: string; notify: N
     <>
       {sheet.kind === 'newBusiness' && (
         <NameSheet
-          title="New business"
+          title="Add New Business"
           label="Business name"
           onClose={() => setSheet(null)}
           onSave={async (name) => {
@@ -211,7 +211,7 @@ function MyBooks({ home, base, notify }: { home: CbHome; base: string; notify: N
           text="Make a business (like your shop), then add books to it to write cash in and cash out."
           action={
             <Button size="sm" onClick={() => setSheet({ kind: 'newBusiness' })}>
-              + New business
+              + Add New Business
             </Button>
           }
         />
@@ -229,7 +229,7 @@ function MyBooks({ home, base, notify }: { home: CbHome; base: string; notify: N
           value={String(biz.id)}
           options={[
             ...home.businesses.map((b) => ({ value: String(b.id), label: b.name })),
-            { value: NEW, label: '+ New business' },
+            { value: NEW, label: '+ Add New Business' },
           ]}
           onChange={(e) =>
             e.target.value === NEW ? setSheet({ kind: 'newBusiness' }) : go(Number(e.target.value))
@@ -238,7 +238,7 @@ function MyBooks({ home, base, notify }: { home: CbHome; base: string; notify: N
         <Kebab
           label={`Options for ${biz.name}`}
           items={[
-            { label: 'New business', onPick: () => setSheet({ kind: 'newBusiness' }) },
+            { label: 'Add New Business', onPick: () => setSheet({ kind: 'newBusiness' }) },
             { label: 'Rename', onPick: () => setSheet({ kind: 'renameBusiness', biz }) },
             { label: 'Delete', danger: true, onPick: () => setSheet({ kind: 'deleteBusiness', biz }) },
           ]}

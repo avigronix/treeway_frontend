@@ -88,7 +88,9 @@ export function IdStatusCard({ code }: { code: string }) {
         </li>
         <li className="text-mut">ID active: income, daily videos and your referral link start</li>
       </ol>
-      <ButtonLink to="/activate">{pending ? 'See activation status' : 'Activate my ID'}</ButtonLink>
+      <ButtonLink to="/activate" variant={pending ? 'gold' : 'primary'}>
+        {pending ? 'See activation status' : 'Activate my ID'}
+      </ButtonLink>
     </Card>
   );
 }

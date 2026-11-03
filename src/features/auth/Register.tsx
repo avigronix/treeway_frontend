@@ -156,6 +156,8 @@ export default function Register() {
           placeholder="TW1234567"
           autoCapitalize="characters"
           autoComplete="off"
+          // Every ID is TW + 7 digits: never more than 9 letters.
+          maxLength={9}
           error={sponsorErr}
           ok={sponsorErr ? undefined : sponsorOk}
           help={sponsor.isFetching ? 'Checking…' : undefined}
