@@ -340,7 +340,7 @@ export function BookView({ book, notify }: { book: CbBookDetail; notify: Notify 
         </span>
         {owner ? (
           <Button variant="ghost" size="sm" onClick={() => setMembers(true)}>
-            Members ({book.members.length})
+            + Members ({book.members.length})
           </Button>
         ) : (
           <Chip tone="blue">View only</Chip>
