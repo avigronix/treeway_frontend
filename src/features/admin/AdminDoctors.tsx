@@ -21,7 +21,7 @@ import { formatCount } from '@/lib/money';
 import { usePageClamp } from '@/lib/usePageClamp';
 import { useSingleFlight } from '@/lib/useSingleFlight';
 import { HealthFile } from '@/features/doctor/HealthFile';
-import { AdminTitle, Kpi, Kpis, Pager, Panel, Table, td } from './AdminParts';
+import { AdminTitle, Kpi, Kpis, Pager, Panel } from './AdminParts';
 import { checkDoctor } from './adminText';
 
 // J2 "Doctor requests": every request (waiting > 24 h apart), move one to another doctor, the doctors
@@ -30,6 +30,22 @@ import { checkDoctor } from './adminText';
 type Doc = Schema<'AdminDoctor'>;
 type Req = Schema<'AdminDoctorRequest-Output'>;
 type Tab = 'waiting' | 'overdue' | 'answered';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+// One line under the tabs, so the admin knows what each list is (Vinay 3 Nov: easy to understand).
+const TAB_HINT: Record<Tab, string> = {
+  waiting: 'Not answered yet. Open one to see it or move it to another doctor.',
+  overdue: 'Waiting more than 24 hours (they are in Waiting too). Move them if the doctor is busy.',
+  answered: 'The doctor has sent a prescription.',
+};
+
+/** Answered, or waiting (red "Late" after 24 hours, like the server's "Over 24 h" list), as of `asOf` (the list's
+ * answer time). */
+function RequestChip({ r, asOf }: { r: Req; asOf: number }) {
+  if (r.status === 'answered') return <Chip tone="ok">Answered</Chip>;
+  if (asOf - Date.parse(r.created_at) > DAY_MS) return <Chip tone="bad">Late · over 24 h</Chip>;
+  return <Chip tone="wait">Waiting</Chip>;
+}
 
 const doctorsApi = {
   list: (signal?: AbortSignal) => api<Doc[]>('/admin/doctors', { signal }),
@@ -349,7 +365,7 @@ export default function AdminDoctors() {
       {c && (
         <Kpis>
           <Kpi label="Waiting" value={formatCount(c.waiting)} />
-          <Kpi label="Waiting over 24 h" value={formatCount(c.overdue)} alert={c.overdue > 0} />
+          <Kpi label="Late (over 24 h)" value={formatCount(c.overdue)} alert={c.overdue > 0} />
           <Kpi
             label="No doctor"
             value={formatCount(c.no_doctor)}
@@ -371,10 +387,11 @@ export default function AdminDoctors() {
         className="max-w-[520px]"
         items={[
           { value: 'waiting', label: 'Waiting', count: c?.waiting },
-          { value: 'overdue', label: 'Over 24 h', count: c?.overdue },
-          { value: 'answered', label: 'Answered' },
+          { value: 'overdue', label: 'Late', count: c?.overdue },
+          { value: 'answered', label: 'Answered', count: c?.answered },
         ]}
       />
+      <p className="m-0 text-[13px] text-mut">{TAB_HINT[tab]}</p>
       <Panel>
         {reqs.isError ? (
           <ErrorBox error={reqs.error} onRetry={() => reqs.refetch()} />
@@ -386,31 +403,27 @@ export default function AdminDoctors() {
           <>
             <ul className="m-0 flex list-none flex-col p-0">
               {reqs.data.rows.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex flex-wrap items-center justify-between gap-2 border-b border-line2 py-2.5 last:border-0"
-                >
-                  <span className="flex min-w-0 flex-col">
-                    <b className="truncate">
-                      {r.full_name} · {r.problem.slice(0, 40)}
-                    </b>
-                    <small className="text-[12.5px] text-mut">
-                      {r.user_code} · {formatWhen(r.created_at)}
-                      {r.files.length
-                        ? ` · ${r.files.length} file${r.files.length === 1 ? '' : 's'}`
-                        : ''} · {r.doctor_name ?? 'no doctor'}
+                <li key={r.id} className="flex flex-col gap-1.5 border-b border-line2 py-3 last:border-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex min-w-0 flex-col">
+                      <b className="text-[15px]">{r.full_name}</b>
+                      <small className="text-[12.5px] text-mut">
+                        {r.user_code} · {formatWhen(r.created_at)}
+                      </small>
+                    </span>
+                    <RequestChip r={r} asOf={reqs.dataUpdatedAt} />
+                  </div>
+                  <p className="m-0 line-clamp-2 text-sm break-words">"{r.problem}"</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <small className="text-[13px] text-mut">
+                      Doctor:{' '}
+                      <b className={r.doctor_name ? 'text-ink' : 'text-b'}>{r.doctor_name ?? 'none yet'}</b>
+                      {r.files.length ? ` · ${r.files.length} file${r.files.length === 1 ? '' : 's'}` : ''}
                     </small>
-                  </span>
-                  <span className="flex items-center gap-2">
-                    {r.status === 'answered' ? (
-                      <Chip tone="ok">Answered</Chip>
-                    ) : (
-                      <Chip tone="wait">Waiting</Chip>
-                    )}
                     <Button size="sm" variant="ghost" onClick={() => (setOpen(r), setMsg(null))}>
                       Open
                     </Button>
-                  </span>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -426,27 +439,30 @@ export default function AdminDoctors() {
         ) : doctors.length === 0 ? (
           <Note tone="warn">No doctor yet. Members' questions wait until you add one.</Note>
         ) : (
-          <Table head={['Doctor', 'Reg. no.', 'Waiting', 'Answered this month', 'Login', '']} min={680}>
+          // Cards, not a wide table: on a phone the counts and "Manage" stay on the screen.
+          <ul className="m-0 grid list-none gap-2.5 p-0 tab:grid-cols-2">
             {doctors.map((d) => (
-              <tr key={d.user_code}>
-                <td className={td}>
-                  <b>{d.full_name}</b>
-                  <small className="block text-[12.5px] text-mut">
-                    {d.user_code} · {d.mobile}
-                  </small>
-                </td>
-                <td className={td}>{d.bams_reg_no ?? '–'}</td>
-                <td className={`${td} num`}>{formatCount(d.waiting)}</td>
-                <td className={`${td} num`}>{formatCount(d.answered_this_month)}</td>
-                <td className={td}>
-                  {d.status === 'active' ? <Chip tone="ok">On</Chip> : <Chip tone="bad">Blocked</Chip>}
-                </td>
-                <td className={td}>
+              <li key={d.user_code} className="flex flex-col gap-2 rounded-2xl border border-line p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="flex min-w-0 flex-col">
+                    <b className="text-[15px]">{d.full_name}</b>
+                    <small className="text-[12.5px] text-mut">
+                      {d.user_code} · {d.mobile}
+                    </small>
+                    <small className="text-[12.5px] text-mut">Reg. no. {d.bams_reg_no ?? '–'}</small>
+                  </span>
+                  {d.status === 'active' ? <Chip tone="ok">Login on</Chip> : <Chip tone="bad">Blocked</Chip>}
+                </div>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[13px]">
+                    <b className="num">{formatCount(d.waiting)}</b> waiting ·{' '}
+                    <b className="num">{formatCount(d.answered_this_month)}</b> answered this month
+                  </span>
                   <DoctorActions d={d} doctors={doctors} onDone={setMsg} />
-                </td>
-              </tr>
+                </div>
+              </li>
             ))}
-          </Table>
+          </ul>
         )}
       </Panel>
       {open && (

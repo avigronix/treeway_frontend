@@ -214,7 +214,7 @@ export function VideosDoneModal({
         <div className="flex flex-col rounded-2xl border border-line p-2.5">
           {fresh ? (
             <b className="num">
-              {fresh.days_earned} / {fresh.days_total}
+              {fresh.day_no === null ? fresh.days_earned : `${fresh.days_earned} / ${fresh.days_total}`}
             </b>
           ) : (
             <Skeleton className="mx-auto h-5 w-14" />

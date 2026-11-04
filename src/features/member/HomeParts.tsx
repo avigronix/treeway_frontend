@@ -70,7 +70,11 @@ export function VideosCard({ className }: { className?: string }) {
   if (v) {
     if (v.all_done) {
       head = <b className="text-lg text-ok">Done ✓</b>;
-      foot = `${formatMoney(v.reward, 'always')} · day ${v.day_no} of ${v.days_total}`;
+      // An inactive ID's days have no number (Vinay 3 Nov): its 150 days start at activation.
+      foot =
+        v.day_no === null
+          ? `${formatMoney(v.reward, 'always')} · Product Wallet`
+          : `${formatMoney(v.reward, 'always')} · day ${v.day_no} of ${v.days_total}`;
     } else if (v.eligible && v.ready) {
       head = (
         <b className="text-lg">

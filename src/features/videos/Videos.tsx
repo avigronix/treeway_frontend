@@ -32,6 +32,8 @@ export default function Videos() {
     staleTime: 60_000,
   });
   const t = today.data;
+  // An inactive ID (Vinay 3 Nov): videos every day, no day number; its 150 days start at activation.
+  const free = !!t && t.eligible && t.day_no === null;
 
   return (
     <MemberPage
@@ -64,31 +66,45 @@ export default function Videos() {
                 </span>
               )}
             </div>
-            <div
-              className="h-2.5 overflow-hidden rounded-full bg-[#3C7A47]"
-              role="progressbar"
-              aria-label="Earned from videos"
-              aria-valuemin={0}
-              aria-valuemax={t.max_total}
-              aria-valuenow={t.earned_total}
-            >
-              <i
-                className="block h-full rounded-full bg-sun"
-                style={{
-                  width: `${t.max_total > 0 ? Math.min(100, (t.earned_total / t.max_total) * 100) : 0}%`,
-                }}
-              />
-            </div>
-            <div className="flex items-center justify-between gap-2.5 text-[13px] text-[#E4EFE0]">
-              <span>
+            {free ? (
+              <span className="text-[13px] text-[#E4EFE0]">
                 Earned from videos: <Money value={t.earned_total} />
               </span>
-              <span>
-                Can earn up to <Money value={t.max_total} />
-              </span>
-            </div>
+            ) : (
+              <>
+                <div
+                  className="h-2.5 overflow-hidden rounded-full bg-[#3C7A47]"
+                  role="progressbar"
+                  aria-label="Earned from videos"
+                  aria-valuemin={0}
+                  aria-valuemax={t.max_total}
+                  aria-valuenow={t.earned_total}
+                >
+                  <i
+                    className="block h-full rounded-full bg-sun"
+                    style={{
+                      width: `${t.max_total > 0 ? Math.min(100, (t.earned_total / t.max_total) * 100) : 0}%`,
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2.5 text-[13px] text-[#E4EFE0]">
+                  <span>
+                    Earned from videos: <Money value={t.earned_total} />
+                  </span>
+                  <span>
+                    Can earn up to <Money value={t.max_total} />
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
+          {free && (
+            <Note tone="info">
+              You get {formatMoney(t.reward)} a day in your Product Wallet even before your ID is active.
+              Activate your ID to use it in the Shop. Your {t.days_total} days start on the day you activate.
+            </Note>
+          )}
           {!t.eligible && t.day_no !== null && t.day_no > t.days_total ? (
             <Note>Your {t.days_total} days of daily videos are complete.</Note>
           ) : !t.ready && t.starts_at ? (

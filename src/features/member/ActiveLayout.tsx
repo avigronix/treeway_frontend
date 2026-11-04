@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router';
 import { useMe } from '@/auth/session';
 import { BannerModal } from '@/features/content/BannerModal';
@@ -7,16 +8,20 @@ import { useVideoLock } from '@/features/videos/useVideoLock';
 import { ActivateBanner, ActivateFirst } from './InactiveParts';
 import { isLockedForInactive } from './inactiveLock';
 
-/** Every member page. An ACTIVE member gets the locked daily videos over the app until today's are done.
- * An INACTIVE member (Vinay 20 Oct) may look around: a banner on top, and pages that need an active ID show
- * "Activate your ID first". (The server says locked = false for an inactive ID, so no video lock either.) */
+/** Every member page. Every member gets the locked daily videos over the app until today's are done (an inactive
+ * ID too, Vinay 3 Nov: the server says when). An INACTIVE member (Vinay 20 Oct) may look around: a banner on top,
+ * and pages that need an active ID show "Activate your ID first". */
 export default function ActiveLayout() {
-  const me = useMe().data;
-  if (me?.status === 'inactive') return <InactiveLayout />;
-  return <LockedVideosLayout />;
+  const inactive = useMe().data?.status === 'inactive';
+  // A new layout on activation: the lock must come from a fresh answer (Day 1), never the inactive one.
+  return (
+    <LockedVideosLayout key={inactive ? 'inactive' : 'active'}>
+      {inactive ? <InactivePages /> : <Outlet />}
+    </LockedVideosLayout>
+  );
 }
 
-function InactiveLayout() {
+function InactivePages() {
   const { pathname } = useLocation();
   return (
     <>
@@ -27,7 +32,7 @@ function InactiveLayout() {
   );
 }
 
-function LockedVideosLayout() {
+function LockedVideosLayout({ children }: { children: ReactNode }) {
   const lock = useVideoLock();
   const navigate = useNavigate();
   const today = lock.today.data;
@@ -39,7 +44,7 @@ function LockedVideosLayout() {
     <>
       {/* While locked, the app behind cannot be used (inert) or read out (aria-hidden). */}
       <div inert={locked || undefined} aria-hidden={locked || undefined}>
-        <Outlet />
+        {children}
       </div>
       {lock.done ? (
         <VideosDoneModal
