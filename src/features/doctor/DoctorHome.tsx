@@ -90,7 +90,7 @@ export default function DoctorHome() {
           </ul>
         </Card>
       )}
-      <Note>You see only the name, age, state, problem and files. Tap a request to write the medicine.</Note>
+      <Note>You see only the name, age, state, problem and files. Tap a request to reply.</Note>
     </>
   );
   const tablet = useIsTablet();

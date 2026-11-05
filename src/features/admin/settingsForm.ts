@@ -69,11 +69,6 @@ export const PLAN_GROUPS: GroupDef[] = [
     note: '3rd+ direct to sponsor + Self Help Fund must equal the Super 3 share of each join.',
   },
   {
-    key: 'inactive_remove_days',
-    title: 'Inactive IDs',
-    fields: [{ path: [], label: 'Remove inactive IDs after (days)', kind: 'int' }],
-  },
-  {
     key: 'product_cost_percent',
     title: 'Product cost',
     fields: [{ path: [], label: 'Product cost (% of MRP)', kind: 'percent' }],

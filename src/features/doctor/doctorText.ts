@@ -17,7 +17,7 @@ export function checkPrescription(lines: MedLine[], advice: string) {
   }));
   const form =
     !lines.length && !advice.trim()
-      ? 'Write a medicine or some advice.'
+      ? 'Write your reply or add a medicine.'
       : advice.trim().length > 2000
         ? 'Advice is too long (2000 letters at most).'
         : lines.length > 20

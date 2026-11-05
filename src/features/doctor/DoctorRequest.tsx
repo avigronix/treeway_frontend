@@ -9,8 +9,9 @@ import { HealthFile } from './HealthFile';
 import { checkPrescription, type MedLine } from './doctorText';
 
 // The doctor opens one request: name, age, state, problem, files (nothing else of the member), the old
-// prescriptions, and writes a new one (shop medicines or written names, dosage, days, advice). A sent
-// prescription is never changed: a second one is a new prescription.
+// replies, and writes a new one: the reply text first, medicines (shop or written names, dosage, days) optional
+// (Vinay 4 Nov: "doctor ke pass reply karne ka option hi nhi hai", the form looked like medicines only). The API
+// calls it a prescription. A sent reply is never changed: a second one is a new reply.
 
 const emptyLine = (): MedLine => ({ product_id: null, name: '', dosage: '', days: '' });
 
@@ -131,7 +132,7 @@ export function DoctorRequest({ id, onBack }: { id: number; onBack: () => void }
       setLines([]);
       setAdvice('');
       setConfirm(false);
-      setDone('Prescription sent to the member.');
+      setDone('Reply sent to the member.');
     } catch (e) {
       setConfirm(false);
       setError(e);
@@ -181,15 +182,15 @@ export function DoctorRequest({ id, onBack }: { id: number; onBack: () => void }
       {d.prescriptions.map((p) => (
         <Card key={p.id} className="gap-1 text-[13px]">
           <b>
-            Sent {formatWhen(p.created_at)}
+            Your reply · {formatWhen(p.created_at)}
             {p.bams_reg_no ? ` · Reg. no. ${p.bams_reg_no}` : ''}
           </b>
+          {p.advice && <span className="whitespace-pre-wrap">{p.advice}</span>}
           {p.medicines.map((m, i) => (
-            <span key={i}>
+            <span key={i} className="text-mut">
               {m.name} · {m.dosage} · {m.days} days
             </span>
           ))}
-          {p.advice && <span className="whitespace-pre-wrap text-mut">{p.advice}</span>}
         </Card>
       ))}
       {done && (
@@ -197,8 +198,17 @@ export function DoctorRequest({ id, onBack }: { id: number; onBack: () => void }
           {done}
         </Note>
       )}
-      <Card className="gap-2.5">
-        <b className="text-sm">{d.prescriptions.length ? 'Write another prescription' : 'Write medicine'}</b>
+      <Card className="gap-2.5" role="region" aria-label="Reply to the member">
+        <b className="text-[15px]">
+          {d.prescriptions.length ? 'Send another reply' : `Reply to ${d.member_name}`}
+        </b>
+        <TextAreaField
+          label="Your reply (advice, what to do, what to avoid)"
+          placeholder="Rest, drink warm water, avoid cold food…"
+          value={advice}
+          onChange={(e) => (setAdvice(e.target.value), setConfirm(false))}
+        />
+        <span className="text-[13px] font-bold">Medicines (optional)</span>
         {lines.map((m, i) => (
           <MedicineRow
             key={i}
@@ -214,19 +224,14 @@ export function DoctorRequest({ id, onBack }: { id: number; onBack: () => void }
             + Add medicine
           </Button>
         )}
-        <TextAreaField
-          label="Advice and things to avoid"
-          value={advice}
-          onChange={(e) => (setAdvice(e.target.value), setConfirm(false))}
-        />
         {errs?.form && <Note tone="warn">{errs.form}</Note>}
         {error ? <ErrorBox error={error} /> : null}
         {!confirm ? (
-          <Button onClick={next}>Send prescription</Button>
+          <Button onClick={next}>Send reply</Button>
         ) : (
           <>
             <Note tone="warn">
-              Send it to {d.member_name}? A sent prescription cannot be changed (you can write a new one).
+              Send this reply to {d.member_name}? A sent reply cannot be changed (you can send another one).
             </Note>
             <div className="grid grid-cols-2 gap-2.5">
               <Button variant="ghost" disabled={sending} onClick={() => setConfirm(false)}>

@@ -22,8 +22,8 @@ const variants: Record<ButtonVariant, string> = {
   'outline-white': 'bg-transparent text-white border-[1.5px] border-white hover:bg-white/10',
   danger: 'bg-white text-red border-[1.5px] border-red hover:bg-bbg',
   dash: 'bg-white text-g border-[1.5px] border-dashed border-g hover:bg-tint',
-  // Light yellow: "waiting" actions (Vinay 3 Nov: "See activation status").
-  gold: 'bg-goldbg text-goldink border-[1.5px] border-gold hover:bg-sun/40',
+  // Light yellow: "waiting" actions (Vinay 3 + 4 Nov: "See activation status", clearly yellow, not beige).
+  gold: 'bg-ylw text-goldink border-[1.5px] border-sun hover:bg-sun/60',
 };
 const off = 'bg-offbg text-offink border-0 cursor-not-allowed hover:bg-offbg hover:text-offink';
 

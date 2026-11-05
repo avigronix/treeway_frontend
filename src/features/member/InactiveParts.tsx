@@ -86,7 +86,7 @@ export function IdStatusCard({ code }: { code: string }) {
               ? 'Your payment was not approved: see the reason and send it again'
               : 'Activate: pay by UPI / bank, or use a PIN from your sponsor'}
         </li>
-        <li className="text-mut">ID active: income, daily videos and your referral link start</li>
+        <li className="text-mut">ID active: income, your referral link and the Shop start</li>
       </ol>
       <ButtonLink to="/activate" variant={pending ? 'gold' : 'primary'}>
         {pending ? 'See activation status' : 'Activate my ID'}

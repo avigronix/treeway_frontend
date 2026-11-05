@@ -410,6 +410,8 @@ export interface paths {
         /**
          * Income Summary
          * @description 'My income' screen: per income type for today / this week (from Monday) / this month, all after the cut.
+         *     `yfi_daily` (the daily video ₹20, Product Wallet, no cut) is shown with the 8 income types of the plan
+         *     (Vinay, 4 Nov), but it is not in `total`: the total is the Income Wallet's income.
          */
         get: operations["income_summary_api_v1_wallet_income_summary_get"];
         put?: never;
@@ -6430,11 +6432,6 @@ export interface components {
              * @description Only for active IDs
              */
             referral_link: string | null;
-            /**
-             * Remove On
-             * @description Inactive IDs: removed after this date if not activated
-             */
-            remove_on: string | null;
         };
         /** Medicine */
         Medicine: {
@@ -7834,8 +7831,6 @@ export interface components {
             product_wallet_on_activation: number;
             /** Min Withdraw */
             min_withdraw: number;
-            /** Inactive Remove Days */
-            inactive_remove_days: number;
             /** Cut Percent */
             cut_percent: {
                 [key: string]: number;

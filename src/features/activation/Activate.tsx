@@ -44,14 +44,10 @@ function StatusCard({
   code,
   createdAt,
   last,
-  removeOn,
-  removeDays,
 }: {
   code: string;
   createdAt: string;
   last: MyPaymentRequest | undefined;
-  removeOn: string | null | undefined;
-  removeDays: number;
 }) {
   const pending = last?.status === 'pending';
   const rejected = last?.status === 'rejected';
@@ -97,13 +93,11 @@ function StatusCard({
         </Step>
         <Step n={3} state="todo">
           <b className="text-[13px] text-mut">ID active</b>
-          <span className="text-xs text-mut">Income, daily videos and your referral link start</span>
+          <span className="text-xs text-mut">
+            Income, your referral link and the Shop start; your 150 video days start
+          </span>
         </Step>
       </Timeline>
-      <Note tone="warn">
-        Activate within {removeDays} days{removeOn ? ` (by ${formatDay(removeOn)})` : ''}, or this ID will be
-        removed.
-      </Note>
     </Card>
   );
 }
@@ -278,13 +272,7 @@ export default function Activate() {
       ) : (
         <>
           {requests.isError ? <ErrorBox error={requests.error} onRetry={() => requests.refetch()} /> : null}
-          <StatusCard
-            code={me.data.user_code}
-            createdAt={me.data.created_at}
-            last={last}
-            removeOn={me.data.remove_on}
-            removeDays={config.data?.inactive_remove_days ?? 30}
-          />
+          <StatusCard code={me.data.user_code} createdAt={me.data.created_at} last={last} />
           {last?.status === 'pending' ? (
             <div className="flex flex-col gap-2.5">
               <Note>

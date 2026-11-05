@@ -65,11 +65,7 @@ export default function AdminMembers() {
             small={c.company ? `incl. company ID ${COMPANY_ID}` : undefined}
           />
           <Kpi label="Active" value={formatCount(c.active)} />
-          <Kpi
-            label="Not active yet"
-            value={formatCount(c.inactive)}
-            small={`Removed after 30 days: ${formatCount(c.removed)}`}
-          />
+          <Kpi label="Not active yet" value={formatCount(c.inactive)} />
           <Kpi label="Blocked" value={formatCount(c.blocked)} />
         </Kpis>
       )}
