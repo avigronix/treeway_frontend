@@ -203,6 +203,12 @@ function OrderCard({ o }: { o: Order }) {
           {o.status === 'placed' && o.courier_status === 'pending' && (
             <span className="text-mut">Checking your delivery payment (UTR {o.courier_utr}).</span>
           )}
+          <Link
+            to={`/shop/orders/${o.id}/invoice`}
+            className="inline-flex w-fit items-center gap-1.5 rounded-xl border-[1.5px] border-g px-3.5 py-2 text-[13.5px] font-bold text-g no-underline"
+          >
+            Invoice {o.invoice_no} ›
+          </Link>
           {o.status === 'placed' && o.courier_status === 'rejected' && <ResendUtr o={o} />}
           {o.status === 'placed' && <Cancel o={o} />}
         </div>

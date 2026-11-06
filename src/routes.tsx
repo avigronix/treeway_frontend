@@ -78,6 +78,10 @@ const ComplaintChat = lazy(() => import('@/features/complaints/ComplaintChat'));
 const Shop = lazy(() => import('@/features/shop/Shop'));
 const Checkout = lazy(() => import('@/features/shop/Checkout'));
 const Orders = lazy(() => import('@/features/shop/Orders'));
+const MemberInvoice = lazy(() =>
+  import('@/features/shop/Invoice').then((m) => ({ default: m.MemberInvoice })),
+);
+const AdminInvoice = lazy(() => import('@/features/shop/Invoice').then((m) => ({ default: m.AdminInvoice })));
 const AskDoctor = lazy(() => import('@/features/doctor/AskDoctor'));
 const CashBook = lazy(() => import('@/features/cashbook/CashBook'));
 // The admin's own Cash Book: the same screen inside the admin frame (Vinay 2 Nov: every account has one).
@@ -110,12 +114,25 @@ export const routes: RouteObject[] = [
       { path: '/site', lazy: page(() => import('@/features/site/Landing')) },
       { path: '/about', lazy: page(() => import('@/features/site/About')) },
       { path: '/privacy', lazy: page(() => import('@/features/site/Privacy')) },
+      // Vision and mission are a part of About us (Vinay 6 Nov); the old link still works.
+      { path: '/vision-mission', element: <Navigate to="/about#vision-mission" replace /> },
+      { path: '/become-a-distributor', lazy: page(() => import('@/features/site/Distributor')) },
+      {
+        path: '/shipping-policy',
+        lazy: page(() => import('@/features/site/Policies').then((m) => ({ default: m.ShippingPolicy }))),
+      },
+      {
+        path: '/refund-policy',
+        lazy: page(() => import('@/features/site/Policies').then((m) => ({ default: m.RefundPolicy }))),
+      },
       { path: '/contact', lazy: page(() => import('@/features/content/ContactUs')) },
 
       {
         path: '/admin',
         element: <RequireArea area="admin" />,
         children: [
+          // A page of its own (no admin menu), so it prints only the invoice.
+          { path: 'orders/:id/invoice', element: guarded(AdminInvoice) },
           {
             element: guarded(AdminLayout),
             children: [
@@ -152,6 +169,8 @@ export const routes: RouteObject[] = [
       {
         element: <RequireArea area="member" />,
         children: [
+          // A page of its own (no menu, no video lock over it), so it prints only the invoice.
+          { path: '/shop/orders/:id/invoice', element: guarded(MemberInvoice) },
           {
             element: guarded(ActiveLayout),
             children: [

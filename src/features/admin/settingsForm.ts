@@ -113,7 +113,11 @@ export const CHARGE_GROUPS: GroupDef[] = [
       { path: ['min'], label: 'Min P2P (₹)', kind: 'money' },
       { path: ['max'], label: 'Max P2P at once (₹)', kind: 'money' },
       { path: ['daily_max'], label: 'P2P max a day (₹)', kind: 'money' },
+      { path: ['enabled'], label: 'P2P is on', kind: 'bool' },
+      { path: ['up_levels'], label: 'To upline up to (levels, sponsor = 1)', kind: 'int' },
+      { path: ['down_levels'], label: 'To own team up to (levels)', kind: 'int' },
     ],
+    note: 'Off = nobody can send P2P. Upline 0-25 levels, team 0-100 levels (Vinay 6 Nov). A member can never send to another line of the team.',
   },
   {
     key: 'two_admin_threshold',

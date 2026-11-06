@@ -1823,6 +1823,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/shop/orders/{orderId}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Invoice
+         * @description The member's own order invoice (to print or save as PDF).
+         */
+        get: operations["my_invoice_api_v1_shop_orders__orderId__invoice_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/shop/orders/{orderId}/cancel": {
         parameters: {
             query?: never;
@@ -1928,6 +1948,23 @@ export interface paths {
         };
         /** Admin Order */
         get: operations["admin_order_api_v1_admin_orders__orderId__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{orderId}/invoice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Admin Invoice */
+        get: operations["admin_invoice_api_v1_admin_orders__orderId__invoice_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3463,6 +3500,8 @@ export interface components {
             id: number;
             /** Order No */
             order_no: string;
+            /** Invoice No */
+            invoice_no: string;
             /**
              * Status
              * @enum {string}
@@ -4411,6 +4450,10 @@ export interface components {
             phone: string;
             /** Whatsapp Group */
             whatsapp_group: string;
+            /** Address */
+            address: string;
+            /** Gstin */
+            gstin: string;
         };
         /** ComplaintCounts */
         ComplaintCounts: {
@@ -5308,6 +5351,14 @@ export interface components {
             status: number;
             data: components["schemas"]["IncomeSummary"];
         };
+        /** Envelope[Invoice] */
+        Envelope_Invoice_: {
+            /** Msg */
+            msg: string;
+            /** Status */
+            status: number;
+            data: components["schemas"]["Invoice"];
+        };
         /** Envelope[JoiningsReport] */
         Envelope_JoiningsReport_: {
             /** Msg */
@@ -6091,6 +6142,89 @@ export interface components {
             /** Tds */
             tds: number;
         };
+        /**
+         * Invoice
+         * @description A shop order's invoice (non-GST, Vinay 6 Nov). Every amount is from the server.
+         */
+        Invoice: {
+            /** Invoice No */
+            invoice_no: string;
+            /**
+             * Invoice Date
+             * Format: date-time
+             */
+            invoice_date: string;
+            /** Order No */
+            order_no: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "placed" | "packed" | "shipped" | "delivered" | "cancelled";
+            seller: components["schemas"]["InvoiceSeller"];
+            buyer: components["schemas"]["InvoiceBuyer"];
+            /** Items */
+            items: components["schemas"]["InvoiceLine"][];
+            /** Items Total */
+            items_total: number;
+            /** Courier Charge */
+            courier_charge: number;
+            /** Total */
+            total: number;
+            paid: components["schemas"]["WalletSplit"];
+            /** Courier Utr */
+            courier_utr: string;
+            /**
+             * Courier Status
+             * @enum {string}
+             */
+            courier_status: "pending" | "approved" | "rejected";
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Cancel Reason */
+            cancel_reason: string | null;
+            /** Courier Refund Due */
+            courier_refund_due: boolean;
+            /** Courier Refunded At */
+            courier_refunded_at: string | null;
+        };
+        /** InvoiceBuyer */
+        InvoiceBuyer: {
+            /** Name */
+            name: string;
+            /** User Code */
+            user_code: string;
+            /** Mobile */
+            mobile: string;
+            /** Address */
+            address: string;
+            /** Pincode */
+            pincode: string;
+        };
+        /** InvoiceLine */
+        InvoiceLine: {
+            /** Name */
+            name: string;
+            /** Qty */
+            qty: number;
+            /** Mrp */
+            mrp: number;
+            /** Amount */
+            amount: number;
+        };
+        /** InvoiceSeller */
+        InvoiceSeller: {
+            /** Name */
+            name: string;
+            /** Address */
+            address: string;
+            /** Phone */
+            phone: string;
+            /** Email */
+            email: string;
+            /** Gstin */
+            gstin: string;
+        };
         /** JoiningRow */
         JoiningRow: {
             /**
@@ -6623,6 +6757,11 @@ export interface components {
              * @description Level in my team, null if not in my team
              */
             my_level: number | null;
+            /**
+             * My Upline Level
+             * @description Levels above me in my upline (sponsor = 1), null if not
+             */
+            my_upline_level: number | null;
             /** Is My Sponsor */
             is_my_sponsor: boolean;
         };
@@ -6994,6 +7133,8 @@ export interface components {
             id: number;
             /** Order No */
             order_no: string;
+            /** Invoice No */
+            invoice_no: string;
             /**
              * Status
              * @enum {string}
@@ -7159,6 +7300,12 @@ export interface components {
             sent_today: number;
             /** Left Today */
             left_today: number;
+            /** Enabled */
+            enabled: boolean;
+            /** Up Levels */
+            up_levels: number;
+            /** Down Levels */
+            down_levels: number;
         };
         /** P2PModel */
         P2PModel: {
@@ -7861,8 +8008,12 @@ export interface components {
             max: number;
             /** Daily Max */
             daily_max: number;
-            /** Max Level */
-            max_level: number;
+            /** Enabled */
+            enabled: boolean;
+            /** Up Levels */
+            up_levels: number;
+            /** Down Levels */
+            down_levels: number;
         };
         /** PublicShop */
         PublicShop: {
@@ -12081,6 +12232,37 @@ export interface operations {
             };
         };
     };
+    my_invoice_api_v1_shop_orders__orderId__invoice_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Invoice_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     member_cancel_api_v1_shop_orders__orderId__cancel_post: {
         parameters: {
             query?: never;
@@ -12286,6 +12468,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Envelope_AdminOrder_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    admin_invoice_api_v1_admin_orders__orderId__invoice_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Invoice_"];
                 };
             };
             /** @description Validation Error */

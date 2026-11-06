@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { shopAdminApi, type AdminOrder } from '@/api/shop';
@@ -121,6 +122,11 @@ function OrderSheet({ o, onClose }: { o: AdminOrder; onClose: (msg?: string) => 
           </KeyValue>
         )}
         {o.cancel_reason && <KeyValue k="Cancelled">{o.cancel_reason}</KeyValue>}
+        <KeyValue k="Invoice">
+          <Link to={`/admin/orders/${o.id}/invoice`} className="font-bold text-g">
+            {o.invoice_no} · open to print ›
+          </Link>
+        </KeyValue>
       </div>
       {step === 'payment' && <Receipt path={o.courier_receipt} label="Delivery payment" />}
       {step === 'member' && (

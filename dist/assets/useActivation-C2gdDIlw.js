@@ -1,1 +1,0 @@
-import{U as e,s as t}from"./index-B7fKItWy.js";import{t as n}from"./wallet-yMN1nxct.js";function r(){return e({queryKey:t.paymentRequests(`activation`),queryFn:({signal:e})=>n.paymentRequests(`activation`,e),staleTime:0})}function i(e){return e?.[0]}export{r as n,i as t};

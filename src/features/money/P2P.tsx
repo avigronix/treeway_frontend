@@ -20,12 +20,18 @@ import { useP2PLimits } from './data';
 import { checkAmount, feePreview } from './moneyForm';
 import { OtpSheet } from './OtpSheet';
 
-// C6 "Send to a member (P2P)": Income -> Income, to your team levels 1..5 or your own sponsor (Vinay 29 Oct),
-// with an email OTP. The level limit comes from /config/public (p2p.max_level); the server checks it again.
+// C6 "Send to a member (P2P)": Income -> Income, to your upline up to N levels (sponsor = 1) or your team up to M
+// levels, with an email OTP. N, M and on / off are admin settings (Vinay 6 Nov), from /wallet/p2p/limits; the
+// server checks them again.
 // Fee, limits and "left today" come from the server; the preview is a hint and the server's answer is shown.
 
 /** Who the ID is, and whether P2P to them is allowed (the server checks again). */
-function useReceiver(code: string, myCode: string | undefined, maxLevel: number | undefined) {
+function useReceiver(
+  code: string,
+  myCode: string | undefined,
+  up: number | undefined,
+  down: number | undefined,
+) {
   const c = useDebounced(code.trim().toUpperCase(), 350);
   const valid = CODE_RE.test(c);
   const q = useQuery({
@@ -41,10 +47,15 @@ function useReceiver(code: string, myCode: string | undefined, maxLevel: number 
   if (q.isError) return { code: c, state: 'notfound' as const };
   const m = q.data!;
   if (m.status !== 'active') return { code: c, state: 'inactive' as const, m };
-  if (m.is_my_sponsor) return { code: c, state: 'ok' as const, m };
-  if (m.my_level === null) return { code: c, state: 'outside' as const, m };
-  if (maxLevel !== undefined && m.my_level > maxLevel) return { code: c, state: 'deep' as const, m };
-  return { code: c, state: 'ok' as const, m };
+  if (m.my_level !== null) {
+    if (down !== undefined && m.my_level > down) return { code: c, state: 'deep' as const, m };
+    return { code: c, state: 'ok' as const, m };
+  }
+  if (m.my_upline_level !== null) {
+    if (up !== undefined && m.my_upline_level > up) return { code: c, state: 'high' as const, m };
+    return { code: c, state: 'ok' as const, m };
+  }
+  return { code: c, state: 'outside' as const, m };
 }
 
 const PICK_LIMIT = 50;
@@ -112,8 +123,14 @@ export default function P2P() {
   const qc = useQueryClient();
   const me = useMe().data;
   const config = useConfig().data?.p2p;
-  const maxLevel = config?.max_level;
   const limits = useP2PLimits();
+  const up = limits.data?.up_levels;
+  const down = limits.data?.down_levels;
+  const off = limits.data?.enabled === false;
+  const rule =
+    up !== undefined && down !== undefined
+      ? `your upline up to ${up} level${up === 1 ? '' : 's'} (your sponsor is 1) or your team up to ${down} level${down === 1 ? '' : 's'}`
+      : 'your upline or your team';
   const balance = useWalletSummary().data?.income;
   const [to, setTo] = useState('');
   const [text, setText] = useState('');
@@ -126,7 +143,7 @@ export default function P2P() {
   const [done, setDone] = useState<string | null>(null);
   const [wait, startWait] = useCountdown();
 
-  const r = useReceiver(to, me?.user_code, maxLevel);
+  const r = useReceiver(to, me?.user_code, up, down);
   const left = limits.data?.left_today;
   const max = config && left !== undefined ? Math.min(config.max, left) : config?.max;
   const check = checkAmount(text, { min: config?.min, max, balance });
@@ -200,14 +217,19 @@ export default function P2P() {
     outside:
       r.state === 'outside' ? (
         <span className="text-xs font-semibold text-b">
-          {r.m.full_name} is not in your team. You can send only to your team or your sponsor.
+          {r.m.full_name} is not in your upline or your team. You can send only to {rule}.
         </span>
       ) : null,
     deep:
       r.state === 'deep' ? (
         <span className="text-xs font-semibold text-b">
-          {r.m.full_name} is at level {r.m.my_level} of your team. You can send only up to level {maxLevel} or
-          to your sponsor.
+          {r.m.full_name} is at level {r.m.my_level} of your team. You can send only to {rule}.
+        </span>
+      ) : null,
+    high:
+      r.state === 'high' ? (
+        <span className="text-xs font-semibold text-b">
+          {r.m.full_name} is {r.m.my_upline_level} levels above you. You can send only to {rule}.
         </span>
       ) : null,
     ok:
@@ -216,8 +238,10 @@ export default function P2P() {
           <b>{r.m.full_name}</b>
           {r.m.is_my_sponsor ? (
             <Chip tone="gold">My sponsor</Chip>
-          ) : (
+          ) : r.m.my_level !== null ? (
             <Chip tone="ok">in your team (Level {r.m.my_level})</Chip>
+          ) : (
+            <Chip tone="gold">your upline ({r.m.my_upline_level} levels up)</Chip>
           )}
         </span>
       ) : null,
@@ -227,7 +251,9 @@ export default function P2P() {
     <MemberPage
       narrow
       title="Send to a member (P2P)"
-      subtitle={`To your team (up to level ${maxLevel ?? 5}) or your sponsor`}
+      subtitle={
+        up !== undefined && down !== undefined ? `To your upline (up to ${up}) or team (up to ${down})` : ' '
+      }
       back="/wallet"
     >
       {done && (
@@ -235,75 +261,81 @@ export default function P2P() {
           {done}
         </Note>
       )}
-      <Card className="gap-3">
-        <div className="flex flex-col gap-1.5">
+      {off ? (
+        <Note tone="warn">P2P transfer is off right now. Please try again later.</Note>
+      ) : (
+        <Card className="gap-3">
+          <div className="flex flex-col gap-1.5">
+            <TextField
+              label="Send to (member ID)"
+              placeholder="TW1234567"
+              autoCapitalize="characters"
+              autoComplete="off"
+              value={to}
+              onChange={(e) => {
+                setTo(e.target.value);
+                setDone(null);
+              }}
+            />
+            {tell}
+            <div className="flex flex-wrap gap-2">
+              {me?.sponsor_code && (up ?? 0) >= 1 && (
+                <Button size="sm" variant="ghost" onClick={() => setTo(me.sponsor_code!)}>
+                  My sponsor{me.sponsor_name ? ` · ${me.sponsor_name.split(' ')[0]}` : ''}
+                </Button>
+              )}
+              {(down ?? 0) >= 1 && (
+                <Button size="sm" variant="ghost" onClick={() => setPicker(true)}>
+                  Pick from my team
+                </Button>
+              )}
+            </div>
+          </div>
           <TextField
-            label="Send to (member ID)"
-            placeholder="TW1234567"
-            autoCapitalize="characters"
+            label={`Amount${config ? ` (${formatMoney(config.min)} to ${formatMoney(config.max)})` : ''}`}
+            inputMode="decimal"
             autoComplete="off"
-            value={to}
+            value={text}
             onChange={(e) => {
-              setTo(e.target.value);
+              setText(e.target.value);
+              setAmountErr(null);
               setDone(null);
             }}
+            error={amountErr}
+            help={balance !== undefined ? `From your wallet: ${formatMoney(balance)}` : undefined}
           />
-          {tell}
-          <div className="flex flex-wrap gap-2">
-            {me?.sponsor_code && (
-              <Button size="sm" variant="ghost" onClick={() => setTo(me.sponsor_code!)}>
-                My sponsor{me.sponsor_name ? ` · ${me.sponsor_name.split(' ')[0]}` : ''}
-              </Button>
-            )}
-            <Button size="sm" variant="ghost" onClick={() => setPicker(true)}>
-              Pick from my team
-            </Button>
-          </div>
-        </div>
-        <TextField
-          label={`Amount${config ? ` (${formatMoney(config.min)} to ${formatMoney(config.max)})` : ''}`}
-          inputMode="decimal"
-          autoComplete="off"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setAmountErr(null);
-            setDone(null);
-          }}
-          error={amountErr}
-          help={balance !== undefined ? `From your wallet: ${formatMoney(balance)}` : undefined}
-        />
-        {fee && config && (
-          <div className="flex flex-col gap-1 rounded-xl bg-bg p-2.5 text-sm">
-            <div className="flex justify-between">
-              <span className="text-mut">{config.fee_percent}% fee</span>
-              <span>− {formatMoney(fee.fee)}</span>
+          {fee && config && (
+            <div className="flex flex-col gap-1 rounded-xl bg-bg p-2.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-mut">{config.fee_percent}% fee</span>
+                <span>− {formatMoney(fee.fee)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>{name ? `${name} will get` : 'They will get'}</span>
+                <b>{formatMoney(fee.gets)}</b>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>{name ? `${name} will get` : 'They will get'}</span>
-              <b>{formatMoney(fee.gets)}</b>
-            </div>
-          </div>
-        )}
-        {error ? <ErrorBox error={error} /> : null}
-        <Button busy={asking} disabled={r.state !== 'ok' || left === 0} onClick={askOtp}>
-          Send with OTP
-        </Button>
-        <Note>
-          You can send only to your team up to level {maxLevel ?? 5} or to your sponsor.
-          {limits.data
-            ? ` You can send up to ${formatMoney(limits.data.daily_max)} a day (${formatMoney(limits.data.left_today)} left today).`
-            : ''}{' '}
-          P2P money cannot be used to activate an ID.
-        </Note>
-      </Card>
+          )}
+          {error ? <ErrorBox error={error} /> : null}
+          <Button busy={asking} disabled={r.state !== 'ok' || left === 0} onClick={askOtp}>
+            Send with OTP
+          </Button>
+          <Note>
+            You can send only to {rule}.
+            {limits.data
+              ? ` You can send up to ${formatMoney(limits.data.daily_max)} a day (${formatMoney(limits.data.left_today)} left today).`
+              : ''}{' '}
+            P2P money cannot be used to activate an ID.
+          </Note>
+        </Card>
+      )}
 
       <h2 className="m-0 text-[14.5px] font-bold">P2P history</h2>
       <HistoryList filter={{ group: 'p2p' }} emptyTitle="No P2P yet" />
 
       <TeamPicker
         open={picker}
-        maxLevel={maxLevel ?? 5}
+        maxLevel={down ?? 0}
         onClose={() => setPicker(false)}
         onPick={(c) => {
           setTo(c);

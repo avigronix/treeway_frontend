@@ -16,13 +16,20 @@ export const COMPANY_KEYS: (keyof CompanyForm)[] = [
   'email',
   'phone',
   'whatsapp_group',
+  'address',
+  'gstin',
 ];
 const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]+\.[A-Za-z]{2,}$/;
+const GSTIN_RE = /^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 
 /** One line, no extra spaces; IFSC upper case, UPI and email lower case (as the server saves them). */
 export function cleanCompany(k: keyof CompanyForm, v: string): string {
   const t = v.split(/\s+/).filter(Boolean).join(' ');
-  return k === 'ifsc' ? t.toUpperCase() : k === 'upi_id' || k === 'email' ? t.toLowerCase() : t;
+  return k === 'ifsc' || k === 'gstin'
+    ? t.toUpperCase()
+    : k === 'upi_id' || k === 'email'
+      ? t.toLowerCase()
+      : t;
 }
 
 /** Field -> message. Empty fields are fine (= not set, hidden from members). */
@@ -40,6 +47,7 @@ export function checkCompany(f: CompanyForm): Partial<Record<keyof CompanyForm, 
   if (f.phone && !MOBILE_RE.test(f.phone)) e.phone = 'Phone must be a 10-digit mobile number.';
   if (f.whatsapp_group && !WHATSAPP_RE.test(f.whatsapp_group))
     e.whatsapp_group = 'Use the WhatsApp group link (https://chat.whatsapp.com/...).';
+  if (f.gstin && !GSTIN_RE.test(f.gstin)) e.gstin = 'GSTIN has 15 letters and digits (like 09ABCDE1234F1Z5).';
   return e;
 }
 

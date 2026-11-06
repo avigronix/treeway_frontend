@@ -5,14 +5,20 @@ import { Icon } from '@/components/layout/icons';
 import { cx } from '@/lib/cx';
 import { useCompany } from '@/features/auth/usePublic';
 
-// Public website frame (Vinay 29 Oct): Home, About us, Contact us, Privacy policy, Log in, Sign up. No login
-// needed. The app still opens on /login; these pages are reached from "Back to Site" on the login page.
+// Public website frame (Vinay 29 Oct; pages added 6 Nov): Home, About us (with vision and mission), Become a
+// distributor, Contact us; the policies in the footer. No login needed. The app still opens on /login; these pages
+// are reached from "Back to Site" on the login page.
 
 const SITE_LINKS = [
   { to: '/site', label: 'Home' },
   { to: '/about', label: 'About us' },
+  { to: '/become-a-distributor', label: 'Become a distributor' },
   { to: '/contact', label: 'Contact us' },
+] as const;
+const POLICY_LINKS = [
   { to: '/privacy', label: 'Privacy policy' },
+  { to: '/shipping-policy', label: 'Shipping policy' },
+  { to: '/refund-policy', label: 'Refund, return and replacement' },
 ] as const;
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -85,6 +91,17 @@ export function SitePage({ title, children }: { title: string; children: ReactNo
                   </NavLink>
                 </li>
               ))}
+              {POLICY_LINKS.map((l) => (
+                <li key={l.to}>
+                  <NavLink
+                    to={l.to}
+                    className={(s) => cx(navClass(s), 'block text-[14px] font-medium text-mut')}
+                    onClick={() => setOpen(false)}
+                  >
+                    {l.label}
+                  </NavLink>
+                </li>
+              ))}
             </ul>
             <div className="mt-3 grid grid-cols-2 gap-2">
               <ButtonLink to="/login" variant="ghost" size="md">
@@ -101,12 +118,13 @@ export function SitePage({ title, children }: { title: string; children: ReactNo
       <main className="flex-1">{children}</main>
 
       <footer className="border-t-[3px] border-gold bg-gt text-[#D6E8D0]">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 tab:grid-cols-3">
+        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8 tab:grid-cols-4">
           <div className="flex flex-col gap-2">
             <b className="font-brand text-xl text-sun">Treeway</b>
             <span className="text-sm">
-              The power of nature: Ayurvedic products, free doctor advice and a simple member app.
+              The Power of Nature, The Wisdom of Tradition, The Promise of Growth.
             </span>
+            {company?.address ? <span className="text-[13px]">{company.address}</span> : null}
           </div>
           <nav aria-label="Footer" className="flex flex-col gap-1.5 text-sm">
             {SITE_LINKS.map((l) => (
@@ -120,6 +138,14 @@ export function SitePage({ title, children }: { title: string; children: ReactNo
             <Link to="/register" className="text-white no-underline hover:underline">
               Sign up
             </Link>
+          </nav>
+          <nav aria-label="Policies" className="flex flex-col gap-1.5 text-sm">
+            <b className="text-white">Policies</b>
+            {POLICY_LINKS.map((l) => (
+              <Link key={l.to} to={l.to} className="text-white no-underline hover:underline">
+                {l.label}
+              </Link>
+            ))}
           </nav>
           <div className="flex flex-col gap-1.5 text-sm">
             <b className="text-white">Help</b>

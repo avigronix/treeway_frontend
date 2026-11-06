@@ -118,3 +118,25 @@
     background-position: -200% 0;
   }
 }
+
+/* Printing (the shop invoice, Vinay 6 Nov): A4 with a margin; the page has no app menu. */
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+/* Public website motion (Vinay 6 Nov), used only with motion-safe: */
+@keyframes tw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes tw-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}

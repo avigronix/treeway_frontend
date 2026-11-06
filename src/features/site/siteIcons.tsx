@@ -1,0 +1,71 @@
+// Line icons of the public website pages (24 px, theme colour from the parent).
+import type { ReactNode } from 'react';
+
+const icon = (d: ReactNode) => (
+  <svg
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    {d}
+  </svg>
+);
+
+export const SiteIcon = {
+  leaf: icon(<path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7" />),
+  eye: icon(
+    <>
+      <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </>,
+  ),
+  target: icon(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1" />
+    </>,
+  ),
+  shield: icon(<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5" />),
+  heart: icon(<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" />),
+  users: icon(
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
+    </>,
+  ),
+  book: icon(<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M9 7h6M9 10h4" />),
+  growth: icon(<path d="M3 20h18M5 16l5-5 4 3 6-7M15 7h5v5" />),
+  clock: icon(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </>,
+  ),
+  truck: icon(
+    <>
+      <path d="M2 6h11v10H2zM13 9h4l4 4v3h-8" />
+      <circle cx="6.5" cy="17.5" r="2" />
+      <circle cx="17.5" cy="17.5" r="2" />
+    </>,
+  ),
+  box: icon(<path d="M3 7l9-4 9 4v10l-9 4-9-4zM3 7l9 4 9-4M12 11v10" />),
+  star: icon(<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z" />),
+  handshake: icon(<path d="M3 11l4-4 4 2 3-2 7 5-4 4M7 7l-4 4 6 6 2-2M11 15l2 2M13 13l2 2" />),
+  lock: icon(
+    <>
+      <rect x="5" y="10" width="14" height="10" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </>,
+  ),
+  chat: icon(<path d="M4 5h16v11H9l-5 4z" />),
+  sparkle: icon(
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />,
+  ),
+};

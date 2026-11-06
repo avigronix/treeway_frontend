@@ -149,6 +149,15 @@ export function CompanyPanel({ data }: { data: AdminSettings }) {
             placeholder: 'https://chat.whatsapp.com/...',
           })}
         </div>
+        <div className="grid grid-cols-1 gap-3 desk:grid-cols-[2fr_1fr]">
+          {field('address', 'Company address (printed on every invoice and the website)', {
+            placeholder: 'Shop no., street, city, district, state, PIN code',
+          })}
+          {field('gstin', 'GSTIN (optional, when registered)', {
+            autoCapitalize: 'characters',
+            placeholder: '09ABCDE1234F1Z5',
+          })}
+        </div>
         {error ? <ErrorBox error={error} /> : null}
         {done && (
           <Note role="status" tone="info">
