@@ -384,6 +384,38 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* ---------------------------------------------------------------- founder's message (Vinay 11 Nov) */}
+      <section className="mx-auto max-w-6xl px-4 pb-14">
+        <Link
+          to="/founders-message"
+          className="group relative flex flex-col gap-4 overflow-hidden rounded-[32px] bg-linear-160 from-gt via-g to-gt p-6 text-white no-underline shadow-[0_30px_60px_-30px_rgba(20,54,27,.9)] tab:flex-row tab:items-center tab:gap-8 tab:p-10"
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-20 right-10 size-[300px] rounded-full bg-sun/20 blur-3xl"
+          />
+          <span
+            aria-hidden="true"
+            className="relative font-brand text-[90px] leading-[.6] text-sun tab:text-[130px]"
+          >
+            “
+          </span>
+          <span className="relative flex flex-col gap-3">
+            <span className="text-[12.5px] font-bold tracking-[.2em] text-sun uppercase">
+              Founder's message
+            </span>
+            <span className="font-brand text-[20px] leading-snug tab:text-[26px]">
+              The true identity of any company is built not only through its products but also through its
+              values, transparency, commitment, and the trust it earns from people.
+            </span>
+            <span className="text-[14.5px] text-[#D6E8D0]">— Founder &amp; CEO, Treeway</span>
+            <span className="w-fit rounded-xl bg-linear-90 from-sun to-amber px-4 py-2 text-[14.5px] font-bold text-gt transition motion-safe:group-hover:translate-x-1">
+              Read the full message ›
+            </span>
+          </span>
+        </Link>
+      </section>
+
       {/* ---------------------------------------------------------------- trust */}
       <section className="mx-auto grid max-w-6xl gap-4 px-4 pb-14 tab:grid-cols-3">
         {[

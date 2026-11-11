@@ -12,6 +12,7 @@ import { useCompany } from '@/features/auth/usePublic';
 const SITE_LINKS = [
   { to: '/site', label: 'Home' },
   { to: '/about', label: 'About us' },
+  { to: '/founders-message', label: "Founder's message" },
   { to: '/become-a-distributor', label: 'Become a distributor' },
   { to: '/contact', label: 'Contact us' },
 ] as const;

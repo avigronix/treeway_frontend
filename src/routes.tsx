@@ -117,6 +117,7 @@ export const routes: RouteObject[] = [
       // Vision and mission are a part of About us (Vinay 6 Nov); the old link still works.
       { path: '/vision-mission', element: <Navigate to="/about#vision-mission" replace /> },
       { path: '/become-a-distributor', lazy: page(() => import('@/features/site/Distributor')) },
+      { path: '/founders-message', lazy: page(() => import('@/features/site/FounderMessage')) },
       {
         path: '/shipping-policy',
         lazy: page(() => import('@/features/site/Policies').then((m) => ({ default: m.ShippingPolicy }))),
