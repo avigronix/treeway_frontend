@@ -149,7 +149,7 @@ export default function More() {
       <SectionTitle>Coming soon</SectionTitle>
       <Card flat>
         <ul className="m-0 list-none p-0">
-          {['Gullak savings (10% a year)', 'Repurchase income'].map((t) => (
+          {['Gullak savings (12% a year)', 'Repurchase income'].map((t) => (
             <li
               key={t}
               className="flex min-h-[58px] items-center justify-between gap-2.5 border-b border-line2 px-3.5 py-3 last:border-b-0"
